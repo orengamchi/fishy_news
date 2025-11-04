@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אקווריום תלת ממדי ריאליסטי עם דגים</title>
+    <!-- סגנון CSS: רקע, קנבס ובועות דיבור לדגים --><style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            display: block;
+        }
+        /* בועת דיבור לדגים - מופיעה ליד הדג המדבר */
+        .speech-bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9); /* רקע בהיר */
+            border: 3px solid #0077b6; /* מסגרת כחולה-כסופה */
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #023e8a; /* טקסט כחול כהה */
+            max-width: 180px;
+            text-align: right; /* יישור לימין לעברית */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            z-index: 10;
+            transform: translate(-50%, -100%); /* ממוקם מעל הנקודה */
+            direction: rtl;
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            right: 50%;
+            transform: translateX(50%);
+            border-width: 12px 12px 0;
+            border-style: solid;
+            border-color: #0077b6 transparent transparent transparent;
+        }
+        /* בועת האיקון של המגיש מעל הדג */
+        .anchor-icon-bubble {
+            position: absolute;
+            font-size: 16px;
+            background: #ff5e00;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            pointer-events: none;
+            z-index: 12; /* ** Z-INDEX גבוה יותר כדי להיות תמיד למעלה ** */
+            transform: translate(-50%, -100%); 
+            min-width: 60px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            display: none; /* מוסתר בהתחלה */
+        }
+        /* סגנון לכפתור ולמצב טעינה */
+        #ui-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            z-index: 20;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            transition: opacity 0.5s ease-in-out;
+            border: 1px solid #00ffff; /* סגנון סייבר */
+        }
+        #ui-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .data-button {
+            background-color: #0077b6;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 8px;
+            width: 100%; /* כדי שכל הכפתורים יהיו באותו רוחב */
+            box-sizing: border-box;
+            border: 2px solid #00ffff; /* סגנון סייבר */
+            background: #003366;
+            color: #00ffff;
+        }
+        .data-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .data-button:hover:not(:disabled) {
+            background-color: #0055aa;
+        }
+        #jokesButton {
+            background-color: #4CAF50; /* ירוק */
+            margin-top: 16px; /* מרווח הפרדה */
+            border: 2px solid #66BB6A;
+            background: #225522;
+            color: #66BB6A;
+        }
+        #jokesButton:hover:not(:disabled) {
+            background-color: #337733;
+        }
+        #statusMessage {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #00ffff;
+            font-weight: 500;
+            direction: rtl;
+            text-align: right;
+            max-width: 250px;
+        }
+        .api-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #00ffff55;
+            width: 100%;
+        }
+        .api-input-group input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            background: #111;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            border-radius: 4px;
+            box-sizing: border-box;
+            text-align: right;
+            direction: ltr;
+        }
+        .api-input-group button {
+            margin-top: 5px;
+            padding: 5px 10px;
+            background: #00ffff;
+            color: #003366;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-container">
+        <!-- קבוצת קלט API KEY --><div class="api-input-group">
+            <label style="color: #00ffff; font-size: 14px; margin-bottom: 5px;">מפתח API (Gemini/Google)</label>
+            <input type="password" id="apiKeyInput" placeholder="הכנס מפתח API" dir="ltr">
+            <button onclick="setApiKey()">שמור מפתח</button>
+        </div>
+
+        <!-- כפתורי תוכן דינמי --><button id="newsButton" class="data-button" onclick="updateQuotes('news')">חדשות כלליות (ישראל/עולם)</button>
+        <button id="i24newsButton" class="data-button" onclick="updateQuotes('i24news')">I24 NEWS (עדכונים בינ"ל)</button>
+        <button id="techButton" class="data-button" onclick="updateQuotes('tech')">חדשות הי-טק / סייבר</button>
+        <button id="sportButton" class="data-button" onclick="updateQuotes('sport')">חדשות ספורט (איקונים)</button>
+        <button id="stockButton" class="data-button" onclick="updateQuotes('stock')">נתוני בורסה (חצים)</button>
+        <button id="weatherButton" class="data-button" onclick="updateQuotes('weather')">מזג אוויר (איקונים)</button>
+        
+        <!-- כפתור חזרה לבדיחות --><button id="jokesButton" class="data-button" onclick="returnToJokes()">חזרה לבדיחות דגים</button>
+
+        <div id="statusMessage"></div>
+    </div>
+    <!-- טעינת ספריות Three.js מהרשת --><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/RGBELoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <script>
+        // --- קבועים ומשתנים גלובליים ---
+        let API_KEY = ""; // כעת מפתח ה-API הוא משתנה גלובלי
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`;
+        
+        const STATUS_MESSAGE = document.getElementById('statusMessage');
+
+        // רשימת מגישי חדשות ישראלים (לשימוש באיקון בועה)
+        const ANCHOR_GROUPS = {
+            general: [
+                { name: "יונית לוי", icon: "📺" },
+                { name: "דני קושמרו", icon: "📰" },
+                { name: "רינה מצליח", icon: "🎤" },
+                { name: "אודי סגל", icon: "🎙️" },
+                { name: "בן כספית", icon: "📝" }
+            ],
+            i24news: [ // קבוצה חדשה I24NEWS
+                { name: "קרולין גליק", icon: "🌐" },
+                { name: "עמית סגל", icon: "🇮🇱" },
+                { name: "אדמון לוי", icon: "🌎" }
+            ],
+            finance: [
+                { name: "קרן מרציאנו", icon: "💰" },
+                { name: "מיקי חיות", icon: "📈" },
+                { name: "נחמיה שטרסלר", icon: "📊" }
+            ],
+            tech: [
+                { name: "גיא לוי", icon: "💻" },
+                { name: "טל ברמן", icon: "🤖" },
+                { name: "הילה קורח", icon: "🌐" }
+            ],
+            sport: [
+                { name: "שרון פרי", icon: "⚽" },
+                { name: "מוטי פשכצקי", icon: "🏀" },
+                { name: "רז זהבי", icon: "🏆" }
+            ],
+            weather: [
+                { name: "דני רופ", icon: "☀️" },
+                { name: "סיון קליין", icon: "🌡️" },
+                { name: "נחמן סירקין", icon: "⛈️" }
+            ]
+        };
+        let currentAnchorType = 'general'; // קבוצת המגישים הנוכחית
+
+        // הגדרות סצנה
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+        // הגדרות הרנדרר
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        document.body.appendChild(renderer.domElement);
+
+        // --- בקרות ומצלמה ---
+        
+        // ** חדש: מיקום ראשוני מעל הסלע (5, -8, 5) **
+        camera.position.set(1, -3, 10); // ** קרוב יותר למרכז, אך עדיין מעל הסלע **
+        camera.lookAt(5, -5, 5); // עדיין מסתכל על הסלע
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(5, -5, 5); // ** חדש: מרכז המטרה הוא הסלע **
+        controls.minDistance = 5;
+        controls.maxDistance = 100;
+        
+        // ** מגבלות מצלמה למניעת יציאה משטח האקווריום **
+        // מונע מעבר מתחת לרצפה (y=-10) ומעל התקרה (y=10)
+        controls.minPolarAngle = Math.PI * 0.52; 
+        controls.maxPolarAngle = Math.PI * 0.9; 
+        controls.minAzimuthAngle = -Math.PI * 0.9; 
+        controls.maxAzimuthAngle = Math.PI * 0.9; 
+        
+        // ** דרישה: אל תאפשר זום (התרחקות/התקרבות) **
+        controls.enableZoom = false; 
+
+        // --- תאורה וסביבה ---
+        
+        const rgbeLoader = new THREE.RGBELoader();
+        rgbeLoader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/aerodynamics_workshop_1k.hdr', (texture) => {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            scene.environment = texture; 
+        });
+
+        const ambientLight = new THREE.AmbientLight(0x404040, 3.0);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0); 
+        directionalLight.position.set(10, 25, 15);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 1;
+        directionalLight.shadow.camera.far = 50;
+        directionalLight.shadow.camera.left = -30;
+        directionalLight.shadow.camera.right = 30;
+        directionalLight.shadow.camera.top = 30;
+        directionalLight.shadow.camera.bottom = -30;
+        scene.add(directionalLight);
+
+        const spotLight = new THREE.SpotLight(0xffffff, 2.0, 40, Math.PI * 0.1, 0.5, 2);
+        spotLight.position.set(0, 10, 0);
+        spotLight.target.position.set(0, -5, 0); 
+        spotLight.castShadow = true;
+        spotLight.shadow.mapSize.width = 1024;
+        spotLight.shadow.mapSize.height = 1024;
+        scene.add(spotLight);
+        scene.add(spotLight.target);
+        
+        // --- רקע אנימטיבי גלי (Wave Grid Background) ---
+        const backgroundMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                u_time: { value: 0.0 },
+                u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                u_color_deep: { value: new THREE.Color(0x051025) },
+                u_color_light: { value: new THREE.Color(0x0a1f44) }
+            },
+            vertexShader: `
+                uniform float u_time;
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    vec3 newPosition = position;
+                    // אפקט גל קטן ואיטי על הקודקודים
+                    newPosition.z += sin(newPosition.x * 0.5 + u_time * 0.1) * 0.5;
+                    newPosition.y += cos(newPosition.y * 0.5 + u_time * 0.15) * 0.5;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float u_time;
+                uniform vec3 u_color_deep;
+                uniform vec3 u_color_light;
+                varying vec2 vUv;
+
+                void main() {
+                    vec3 color = mix(u_color_deep, u_color_light, sin(vUv.x * 10.0 + u_time * 0.2) * 0.5 + 0.5);
+
+                    // הוספת פסי גלים עדינים
+                    float wave = sin(vUv.y * 20.0 + u_time * 0.5) * 0.05 + 0.95;
+                    color = mix(color, u_color_light, wave - 0.95);
+
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `,
+            side: THREE.BackSide,
+            depthWrite: false
+        });
+
+        const backgroundGeometry = new THREE.SphereGeometry(500, 32, 32);
+        const backgroundMesh = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+        scene.add(backgroundMesh);
+        
+        // --- אלמנטים סטטיים (פודיום, זכוכית, מסגרת) ---
+        
+        // פודיום
+        const podiumHeight = 15;
+        const podiumGeometry = new THREE.BoxGeometry(34, podiumHeight, 34);
+        const podiumMaterial = new THREE.MeshStandardMaterial({
+            color: 0x4d4d4d,
+            roughness: 0.1,
+            metalness: 0.8,
+            envMapIntensity: 4.0
+        });
+        const podium = new THREE.Mesh(podiumGeometry, podiumMaterial);
+        podium.position.set(0, -10 - (podiumHeight / 2) - 0.25, 0); 
+        podium.receiveShadow = true;
+        podium.castShadow = true;
+        scene.add(podium);
+
+        // מים
+        const waterGeometry = new THREE.BoxGeometry(30, 20, 30);
+        const waterMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x00aaff,
+            transparent: true,
+            opacity: 0.5,
+            roughness: 0.1,
+            metalness: 0.05,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.1,
+            side: THREE.DoubleSide,
+            transmission: 0.95,
+            ior: 1.33,
+            envMapIntensity: 4.0
+        });
+        const water = new THREE.Mesh(waterGeometry, waterMaterial);
+        water.receiveShadow = true;
+        scene.add(water);
+
+        // זכוכית המיכל
+        const glassGeometry = new THREE.BoxGeometry(32, 22, 32);
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.025, 
+            roughness: 0.0,
+            metalness: 0.0,
+            transmission: 1.0,
+            thickness: 0.01,
+            ior: 1.5,
+            envMapIntensity: 4.0
+        });
+        const glass = new THREE.Mesh(glassGeometry, glassMaterial);
+        glass.receiveShadow = true;
+        glass.castShadow = true;
+        scene.add(glass);
+
+        // מסגרת אלומיניום
+        const FRAME_SIZE = 0.5;
+        const FRAME_COLOR = 0xe0e0e0; 
+        const frameMaterial = new THREE.MeshPhysicalMaterial({
+            color: FRAME_COLOR,
+            metalness: 1.0,
+            roughness: 0.05, 
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.1,
+            envMapIntensity: 5.0
+        });
+
+        function createFrameBar(width, height, depth, x, y, z) {
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            const mesh = new THREE.Mesh(geometry, frameMaterial);
+            mesh.position.set(x, y, z);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+        }
+        
+        const TANK_WIDTH = 32;
+        const TANK_HEIGHT = 22;
+        const TANK_DEPTH = 32;
+        const HALF_WIDTH = TANK_WIDTH / 2;
+        const HALF_HEIGHT = TANK_HEIGHT / 2;
+        const HALF_DEPTH = TANK_DEPTH / 2;
+        
+        const cornerPositions = [
+            [HALF_WIDTH + FRAME_SIZE / 2, 0, HALF_DEPTH + FRAME_SIZE / 2],
+            [-HALF_WIDTH - FRAME_SIZE / 2, 0, HALF_DEPTH + FRAME_SIZE / 2],
+            [HALF_WIDTH + FRAME_SIZE / 2, 0, -HALF_DEPTH - FRAME_SIZE / 2],
+            [-HALF_WIDTH - FRAME_SIZE / 2, 0, -HALF_DEPTH - FRAME_SIZE / 2],
+        ];
+        cornerPositions.forEach(p => {
+            createFrameBar(FRAME_SIZE, TANK_HEIGHT + FRAME_SIZE, FRAME_SIZE, p[0], p[1], p[2]);
+        });
+        
+        const topY = HALF_HEIGHT + FRAME_SIZE / 2;
+        const longBar = TANK_WIDTH + FRAME_SIZE;
+        const shortBar = TANK_DEPTH + FRAME_SIZE;
+        
+        createFrameBar(longBar, FRAME_SIZE, FRAME_SIZE, 0, topY, HALF_DEPTH); 
+        createFrameBar(longBar, FRAME_SIZE, FRAME_SIZE, 0, topY, -HALF_DEPTH);
+        createFrameBar(FRAME_SIZE, FRAME_SIZE, shortBar, HALF_WIDTH, topY, 0);
+        createFrameBar(FRAME_SIZE, FRAME_SIZE, shortBar, -HALF_WIDTH, topY, 0);
+        
+        const bottomY = -HALF_HEIGHT - FRAME_SIZE / 2;
+        
+        createFrameBar(longBar, FRAME_SIZE, FRAME_SIZE, 0, bottomY, HALF_DEPTH);
+        createFrameBar(longBar, FRAME_SIZE, FRAME_SIZE, 0, bottomY, -HALF_DEPTH);
+        createFrameBar(FRAME_SIZE, FRAME_SIZE, shortBar, HALF_WIDTH, bottomY, 0);
+        createFrameBar(FRAME_SIZE, FRAME_SIZE, shortBar, -HALF_WIDTH, bottomY, 0);
+        
+        // --- חצץ וצמחייה ---
+
+        // שכבת חצץ
+        const gravelCount = 50000; 
+        const gravelGeometry = new THREE.BufferGeometry();
+        const gravelPositions = new Float32Array(gravelCount * 3);
+        const gravelColors = new Float32Array(gravelCount * 3);
+        const gravelColorsList = [
+            [0.5, 0.5, 0.5], [0.6, 0.4, 0.2], [0.9, 0.9, 0.9], [0.8, 0.2, 0.2]
+        ];
+
+        for (let i = 0; i < gravelCount; i++) {
+            gravelPositions[i * 3] = Math.random() * 30 - 15;
+            gravelPositions[i * 3 + 1] = -10 + Math.random() * 0.5;
+            gravelPositions[i * 3 + 2] = Math.random() * 30 - 15;
+            const color = gravelColorsList[Math.floor(Math.random() * gravelColorsList.length)];
+            gravelColors[i * 3] = color[0];
+            gravelColors[i * 3 + 1] = color[1];
+            gravelColors[i * 3 + 2] = color[2];
+        }
+
+        gravelGeometry.setAttribute('position', new THREE.BufferAttribute(gravelPositions, 3));
+        gravelGeometry.setAttribute('color', new THREE.BufferAttribute(gravelColors, 3));
+        
+        const gravelMaterial = new THREE.PointsMaterial({
+            vertexColors: true,
+            size: 0.15,
+            transparent: true,
+            opacity: 0.9,
+            envMapIntensity: 4.0
+        });
+
+        const gravel = new THREE.Points(gravelGeometry, gravelMaterial);
+        scene.add(gravel);
+
+        // מודל סלע
+        const rockLoader = new THREE.GLTFLoader();
+        const ROCK_URL = 'https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/rock_photogrammetry_scan.glb';
+        const ROCK_SCALE = 4.0;
+        const ROCK_POSITION = new THREE.Vector3(5, -8, 5);
+
+        rockLoader.load(ROCK_URL, (gltf) => {
+            const rock = gltf.scene;
+            rock.scale.set(ROCK_SCALE, ROCK_SCALE, ROCK_SCALE);
+            rock.position.copy(ROCK_POSITION);
+            rock.castShadow = true;
+            rock.receiveShadow = true;
+            
+            rock.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    if (child.material) {
+                        child.material.envMapIntensity = 4.0;
+                        child.material.needsUpdate = true;
+                    }
+                }
+            });
+
+            scene.add(rock);
+        });
+
+        // מודלי צמחייה
+        const GLTF_LOADER = new THREE.GLTFLoader();
+        const CORAL_URL = 'https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/fan_coral_cluster_low.glb';
+        const SPONGE_URL = 'https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/tube_sponge.glb';
+        const PLANT_SCALE = 80.0; 
+        const NUM_CORALS = 4;
+        const NUM_SPONGES = 3;
+
+        function loadAndPlacePlant(url, count, scale, yOffset = 0) {
+            GLTF_LOADER.load(url, (gltf) => {
+                const sourcePlant = gltf.scene;
+                
+                sourcePlant.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        if (child.material) {
+                            const originalMaterial = child.material;
+                            let newMaterial = originalMaterial;
+                            
+                            if (!originalMaterial.isMeshStandardMaterial && !originalMaterial.isMeshPhysicalMaterial) {
+                                newMaterial = new THREE.MeshStandardMaterial().copy(originalMaterial);
+                            } else {
+                                newMaterial = originalMaterial.clone();
+                            }
+                            
+                            newMaterial.envMapIntensity = 3.0;
+                            newMaterial.metalness = 0.1;
+                            newMaterial.roughness = 0.8;
+                            newMaterial.needsUpdate = true;
+
+                            if (newMaterial.map) {
+                                newMaterial.transparent = true;
+                                newMaterial.alphaTest = 0.5;
+                                newMaterial.side = THREE.DoubleSide; 
+                            }
+
+                            child.material = newMaterial;
+                        }
+                    }
+                });
+
+                for (let i = 0; i < count; i++) {
+                    const plantInstance = sourcePlant.clone();
+                    plantInstance.scale.set(scale, scale, scale);
+
+                    plantInstance.position.set(
+                        Math.random() * 20 - 10,
+                        -10 + yOffset,
+                        Math.random() * 20 - 10
+                    );
+                    plantInstance.rotation.y = Math.random() * Math.PI * 2;
+                    scene.add(plantInstance);
+                }
+            });
+        }
+        
+        loadAndPlacePlant(CORAL_URL, NUM_CORALS, PLANT_SCALE, 0); 
+        loadAndPlacePlant(SPONGE_URL, NUM_SPONGES, PLANT_SCALE, 0); 
+
+
+        // --- לוגיקת דגים ובועות דיבור ---
+        
+        // מערך הבדיחות המקורי (שנשמר)
+        const ORIGINAL_JOKES = [
+            "מה המים קרים היום!", "שמעת על הדג שהלך לבית ספר?", "אני דג עם חלומות גדולים!", 
+            "מי צריך אוויר כשיש מים?", "סנפיר ימין, סנפיר שמאל, תמשיך לשחות!", "אני ממש זורם עם הזרם!",
+            "אל תסתכל עליי, אני רק דג קטן!", "למה דגים לא משחקים כדורסל? כי הם מפחדים מהרשת!",
+            "מה אמר הדג לדג השני? תזרום איתי!", "למה הדג הלך לרופא? כי הוא הרגיש דגדוג בגרון.",
+            "איך דגים מתקשרים? הם שולחים מסריחים.", "מה הדג עושה בבנק? מפקיד צ'קים רטובים.",
+            "למה דגים שונאים מחשבים? כי יש בהם וירוסים.", "מה אמר הדג כשפגש חומה? סכר!",
+            "למה הדג קיבל קנס? כי הוא חנה במקום אסור לשחות.", "איך קוראים לדג בלי עיניים? דג!",
+            "מה הדג אוהב לאכול? פיצה עם אנשובי.", "למה הדגים שקטים? כי הם מתחת למים.",
+            "מה הדג עושה כשהוא כועס? הוא רותח ממים.", "למה הדג הלך לבית ספר? כדי להיות חכם יותר.",
+            "איך דגים חוגגים? הם עושים מסיבה בבריכה.", "מה אמר הדג לדגה? את שוחה לי בלב.",
+            "למה הדגים לא עושים דיאטה? כי הם אוהבים לאכול כמו דגים.", "מה הדג אומר כשהוא רואה ספינה? אוי לא, בני אדם!",
+            "למה הדגים לא משחקים קלפים? כי הם מפחדים מהכרישים.", "איך דגים כותבים? בעט דיו.",
+            "מה הדג עושה בסופשבוע? נח על הספה רטובה.", "מהו הדג הקנאי ביותר? דג המדוזה",
+            "איפה דגים שומרים את הכסף שלהם? בגדות הנהר.", "איפה דגים ישנים? במיטת הנהר",
+            "מה החלק הכבד ביותר בדג? הקשקשים.", "איך קוראים לדג עם 10 עיניים? דגggggg.",
+            "איזה כלי נגינה עוזר לתפוס דגים? קסטנטים", "איך יוצרים פתיונות דייג? על ידי יציקה שלהם",
+            "איזה מוזיקה דגים אוהבים לרקוד בה? דראם ובס.", "איזה דג נשמע כמו נבל? קרפיון.",
+            "איזה סוג דג שייך לקרקס? דג ליצן.", "איפה מוצאים דג במסלול? בחלל החיצון.",
+            "למה הדג הסמיק? כי הוא ראה את קרקעית האוקיינוס.", "איך תופסים דג עם מחשב? משתמשים בפיתיון לחיצה.",
+            "מה אמר הדג לחברו שהתנהג בבישנות? תפסיק להיות כל כך קוי.", "מה ההבדל בין פסנתר לדג? אפשר לכוון פסנתר, אבל אי אפשר לכוון דג טונה.",
+            "איך קוראים לדג קוי מזויף? דה קוי", "מה הארוחה האהובה על כריש? דג וצ'יפס.",
+            "איך קוראים לשיר דתי של דג? תהילים.", "איך קוראים לדג שמתקשה ללכת? לימפין קרפ",
+            "למה דגים שוחים בבתי ספר? כי הם לא יכולים ללכת.", "למה לא להזמין די ג'יי לטיול דיג? הם תמיד זורקים את הבס",
+            "איך קוראים לשני דגי ברקודה? זוגקודה.", "איזה סוג דג אוהב לנסות אוכל חדש? בודק בטא.",
+            "תן לאדם דג, הוא אוכל ליום אחד. מה קורה אם תלמד אדם להתכופף? הוא נמנע מלהיכנס לבר.",
+            "מה אילץ הדג הפיראט את דג האסיר לעשות? ללכת את הפלנקטון.", "למה דגים לא אוהבים לשחק כדורסל? כי הם מפחדים מהרשתות.",
+            "למה הכלב קפץ מהסירה לאוקיינוס? הוא חשב שהוא ראה דג חתול", "איך קוראים לדג שיכול לטבוע? סווושי.",
+            "מה אמר הדג כשהוא התנגש בסכר? מינואים.", "איזה מוזיקה דגים מקשיבים? משהו תופס.",
+            "לאיזה מדינה דגים אוהבים לנסוע לחופשה? פינלנד", "מי הוולנטיין של הדג? החברה שלו!",
+            "למה הדג קיבל ציונים רעים? כי הוא היה מתחת לרמת הים.", "איזה סוג דג אוכל עכברים? דג חתול",
+            "מה לווייתנים אוכלים לארוחת ערב? הם אוכלים דגים וספינות.", "מה אמר הדג לדייג? 'אף אחד לא יאמין לך.'",
+            "איזה סוג דג יוצא רק בלילה? כוכב ים.", "איך קוראים לדג בלי 'עין'? דג",
+            "מה אכל כריש עם כריך חמאת בוטנים? מדוזה.", "איך קוראים לדג עם עניבת פרפר? סו-דג-יסטיקייטד",
+            "איך מזהים דג סינדרלה? יש לו כפכפי זכוכית", "איפה דגים הולכים להלוות כסף? להלוואת כריש.",
+            "איך קוראים לדג שמספק שירותי גינה, בעיקר גיזום וטיפולים לעצים ישנים או פגומים. מנתח עצים",
+            "איך קוראים לדג עם הרבה כסף? דג זהב.", "מה אמר הדג כשראה חבר ישן שלא ראיתי ים? זמן רב לא ראיתי ים.",
+            "איך צדפות מגיעות לבית חולים? באמבולנס צדפה.", "מה דגים לוקחים כדי להישאר בריאים? ויטמין ים.",
+            "איך קוראים לדג מופעל סאם-און", "איזה יום בשבוע כל הדגים שונאים ביותר? יום שישי.",
+            "מי הדג העשיר ביותר בים? גיל גייטס, מייסד מקרלסופט", "למה דולפינים חכמים יותר מבני אדם? במרחב של 2 שעות, הם יכולים לאמן אדם לעמוד בצד הבריכה ולהאכיל אותם דגים.",
+            "איך קוראים לדג בלי רגליים? דג.", "איפה דגי זהב אוהבים לטייל? בדרך כלל רק מסביב לכדור.",
+            "מה אמר דג אחד לשני? שמור על הפה סגור ולא תיתפס!", "איך הצדפה הצליחה להתחבא מהדג? הסוואה צדפה!",
+            "דפוק, דפוק. מי שם? דג. דג מי? דג לך חג מולד שמח, דג לך חג מולד שמח!", "דפוק, דפוק. מי שם? דג. דג מי? ברכות!",
+            "דפוק, דפוק. מי שם? דג. דג מי? מזג דג-י שאתה שם, תירגע!", "דפוק, דפוק. מי שם? ארטי דג. ארטי דג מי? ארטי דג-ל אינטליגנציה.",
+            "לקחתי את הלפטופ שלי לסירת הדיג יום אחד כשהוא נפל. זה היה אדל, מתגלגל בעומק.", "החבר שלי חושב שהוא דג אבל הוא טועה. הוא חי בנילוס.",
+            "דג נעצר ועומד מול חבר המושבעים בבית משפט. השופט אומר לחבר המושבעים 'איך אתם מוצאים את הנאשם הדג' חבר מושבעים קם ואומר 'אנחנו מוצאים את הדג אשם'",
+            "סבא ונכדו מחפשים בגינה תולעים דיג כדי להשתמש כפיתיון. הם נתקלים בהרבה חרקים אבל שום דבר מתאים לפיתיון עד שהנכד מחזיק בגאווה חרק תלוי ארוך. הנער קורא 'מצאתי פיתיון, סבא'. סבא מגיב 'מצטער, ילד, אנחנו לא יכולים להשתמש בזה. זה לא תולעת אדמה.' הנכד מגיב 'טוב, מאיזה כוכב לכת זה בא, סבא?'",
+            "אתמול שתיתי כוס קפה עם פינגווין. הוא אמר שהוא היה מעדיף דג.", "חשבת על בדיחת דג עדיין או שאתה צריך עוד זמן להתעמק?",
+            "חיפשתי צדפות בחוף המקומי שלי כל יום עד יום אחד כשמשכתי שריר.", "זה עובדה ידועה שהדג חרב הוא החיה המתלבשת הטובה ביותר באוקיינוס. הוא תמיד מתלבש חד.",
+            "צפיתי בסרט על דיג. היה לו צוות נהדר.", "מה שר הדג שהיה מעריץ גדול של ריק אסטלי? לעולם לא לוותר עליך! לעולם לא לתת לך לטבוע! לעולם לא לשחות סביב ולשפריץ אותך!",
+            "שמעת על הבחור במשפט על רצח שמנסה להתחמק בעונש באמצעות טענת אי שפיות על ידי העמדת פנים שהוא דג? הוא ניסה להיות קוי",
+            "שאלתי את בעל האקווריום על הדג ההולך. הוא אמר 'אתה שואל הרבה שאלות!'", "גידלתי דגי סיאמיים לא אגרסיביים. אני קורא להם בטא בטאס.",
+            "דג קטן נכנס לבר. הברמן שואל את הדג 'מה אני יכול להביא לך?' הדג הקטן מגיב (מתנשם) 'מים! אני צריך מים!'",
+            "המטפל שלי אמר לי לשים אקווריום בסלון כדי להקל על מתח וחרדה. הוא אמר שזה יעזור בגלל הסנפירים הפנימיים שלהם.",
+            "דג נכנס לבר. זה לקח לו 395 מיליון שנים.", "שמעת על הקטטה בחנות דגים וצ'יפס? הרבה דגים כנראה הוכו!",
+            "מישהו זרק עליי בקבוק כדורי אומגה 3. למזלי, ספגתי רק פציעות דג שמן על.",
+            "גבר נכנס למאפייה עם סלמון מתחת לזרוע ואומר 'יש לך עוגות דג?' הבחור מאחורי הדלפק עונה, 'לא'. 'זה חבל, זה יום ההולדה שלו'.",
+            "יש הרבה דגים בים. הרבה לווייתנים גם.", "מעולם לא אכלתי אצבעות דג. לא ידעתי שלדגים יש ידיים.",
+            "התקשרתי לאישה קודם ושאלתי אם היא רוצה שאקח דגים וצ'יפס בדרך הביתה, אבל היא רק נהמה עליי. אני חושב שהיא עדיין מתחרטת שנתנה לי לקרוא לתאומים.",
+            "תן לאדם דג והוא יאכל ליום. למד אדם לדוג והוא יבלה אלפי דולרים על ציוד דיג.",
+            "שני דגים בטנק. אחד פונה לשני ואומר 'אתה יודע איך לנהוג בדבר הזה?'", "חיית המחמד שלי דג היא גיימר. המשחק האהוב עליו הוא קוד",
+            "שני גברים יוצאים לדוג, לאחד גמגום. הגבר עם הגמגום אומר 'שש ששש שש'. הגבר השני אומר 'מה זה, תפסת דג?' השומר פותח את קירור הדייגים ורואה שהבחור חרג מהמגבלה שלו בכ-20 דגים. השומר אומר לגבר שיש לו יותר מדי דגים והוא יקנס אותו. הדייג אומר 'לא, אתה רואה אלה חיות המחמד שלי. לא תפסתי אותם קראתי להם אליי'. השומר לא מאמין לבחור, אז הדייג אומר לשומר שהוא יראה לו. הבחור שופך את הקירור של דגים למים. השומר מחכה דקה ואומר לבחור 'טוב עכשיו קרא לדגים בחזרה'. הגבר הסתכל על השומר ואמר: 'אילו דגים?'",
+            "אתמול עשיתי טאקוס דגים. הם הסתכלו עליהם ופשוט שחו משם.",
+            "קניתי לאהבת חיי כמה דגים מוושינגטון, אבל היא זרקה אותי מיד אחר כך. נו, יש הרבה יותר דגים ב-DC.",
+            "מה אתה נותן לדג ביום ההולדת שלו? עוגת דג.",
+            "בחור היה על הסירה שלו דוג בבריכה ותפס הרבה מעבר למגבלת השק. הוא חוזר לרציף כשהשומר עוצר אותו ומבקש לבדוק מה הוא תפס. השומר פותח את קירור הדייגים ורואה שהבחור חרג מהמגבלה שלו בכ-20 דגים. השומר אומר לגבר שיש לו יותר מדי דגים והוא יקנס אותו. הדייג אומר 'לא, אתה רואה אלה חיות המחמד שלי. לא תפסתי אותם קראתי להם אליי'. השומר לא מאמין לבחור, אז הדייג אומר לשומר שהוא יראה לו. הבחור שופך את הקירור של דגים למים. השומר מחכה דקה ואומר לבחור 'טוב עכשיו קרא לדגים בחזרה'. הגבר הסתכל על השומר ואמר: 'אילו דגים?'",
+            "אין שום דג מתחת לקרח!", "המורה המרשעת בכיתה היא דג כי היא תמיד צועקת 'שששששש'",
+            "ישראלי אחד הולך למעדנייה בניו יורק ואומר למוכר: 'תן לי ק\"ג מהדג הזה.' 'אבל אדוני זה לא דג, זה חזיר' עונה המוכר. 'אני לא שאלתי אותך איך קוראים לדג הזה!'."
+        ];
+        
+        let fishQuotes = [...ORIGINAL_JOKES]; // המערך הדינמי הנוכחי
+        
+        // פונקציה לקביעת משך הצגת הבועה
+        function getBubbleDuration(text) {
+            const BASE_DURATION = 10000; // 10 שניות בסיס
+            const MIN_DURATION = 5000;  // 5 שניות מינימום
+            
+            if (text.length < 20) {
+                // אם הטקסט קצר מאוד (בדיחה קצרה), קצר למינימום
+                return MIN_DURATION;
+            }
+            // אחרת, השאר 10 שניות מלאות
+            return BASE_DURATION;
+        }
+
+        // --- הגדרות API מורחבות ---
+        const API_PROMPTS = {
+            news: {
+                query: "כותרות חדשות אקטואליות מישראל ומהעולם, כולל מקור כמו ynet, חדשות 12 וכדומה",
+                system: "Act as a concise news aggregator. Generate a list of 10 current news headlines in Hebrew based on the latest available information. For each headline, include a concise source (e.g., 'ynet', 'חדשות 12') and a time reference (e.g., 'לפני 3 שעות'). Include a channel icon emoji at the start of each line, such as 📺, 📰, 📝. Output the headline, source, and time on a single line. Do not add any introductory text, concluding remarks, numbering, or bullet points. Example line: 📺 כותרת הדיווח (מקור, זמן פרסום).",
+                message: "כותרות חדשות (כולל מקור ושעה)",
+                anchorGroup: 'general'
+            },
+            i24news: { // קטגוריה חדשה I24NEWS
+                query: "דיווחים בינלאומיים עדכניים בעלי זיקה לישראל",
+                system: "Act as a global news anchor for I24NEWS. Provide 8 concise, relevant international headlines focusing on diplomacy, security, and global events relevant to Israel. Start each line with the 🌐 emoji. Include a global source (e.g., 'רויטרס', 'CNN') and a time reference (e.g., 'לפני 2 דקות'). Output on a single line. Do not add any introductory text, concluding remarks, numbering, or bullet points.",
+                message: "עדכוני I24 NEWS בינלאומיים",
+                anchorGroup: 'i24news'
+            },
+            tech: { // קטגוריה חדשה: הי-טק / סייבר
+                query: "חדשות הי-טק וסייבר אקטואליות מישראל והעולם",
+                system: "Act as a cyber and tech news terminal. Generate 8 recent headlines in Hebrew on cybersecurity, startups, and advanced technology. The tone must be concise and sharp, using technical or 'cyber' jargon where appropriate. For each headline, include a key technological term or company name. Output on a single line. Do not add any introductory text, concluding remarks, numbering, or bullet points.",
+                message: "עדכוני סייבר והי-טק",
+                anchorGroup: 'tech'
+            },
+            sport: { // קטגוריה חדשה: ספורט
+                query: "תוצאות ועדכונים אחרונים בכדורגל, כדורסל וספורט ישראלי ובינלאומי",
+                system: "Act as a sportscaster. Provide 8 exciting and recent updates on Israeli and international football and basketball results. Start each line with a relevant sports emoji (e.g., ⚽, 🏀, 🥇, 🏆). Include team names and scores/results. Output on a single line. Do not add any introductory text, concluding remarks, numbering, or bullet points.",
+                message: "עדכוני ספורט (כולל אייקונים)",
+                anchorGroup: 'sport'
+            },
+            stock: {
+                query: "שערי מדד תל אביב 125, הדולר, והיורו, ועדכון קצר על מצב המסחר",
+                system: "Act as a financial news ticker. Provide 7 distinct, concise updates in Hebrew regarding the Tel Aviv 125 stock index (TA-125), the exchange rates for the US Dollar (USD) and the Euro (EUR), and a brief summary of market sentiment. Include numerical changes and use specific Unicode arrow icons (▲ for gain, ▼ for loss) to visually represent movement/trend for each item, simulating a diagram. Example line: ת\"א 125: 1,800.56 (▲ 1.25%).",
+                message: "נתוני בורסה עדכניים (כולל חצים)",
+                anchorGroup: 'finance'
+            },
+            weather: {
+                query: "תחזית מזג אוויר יומית עדכנית בישראל (ירושלים, תל אביב, חיפה, באר שבע) עם דגש על טמפרטורות",
+                system: "Act as a visual meteorologist. Provide a short, one-sentence weather summary for today in Israel, followed by current temperature or forecast high temperatures for Jerusalem, Tel Aviv, Haifa, and Be'er Sheva. Use Hebrew and include a highly relevant weather emoji icon (e.g., ☀️, 🌧️, ☁️) at the start of each line. Output each piece of information on a new line. Do not add any introductory text, concluding remarks, numbering, or bullet points.",
+                message: "מזג אוויר מעודכן (כולל אייקונים)",
+                anchorGroup: 'weather'
+            },
+            jokes: { // הוספת בדיחות כקטגוריה לוגית
+                query: "בדיחות דגים קצרות בעברית",
+                system: "Generate 10 short, funny fish jokes in Hebrew. Each joke should be on a new line. Do not add any introductory or concluding text, numbering, or bullet points.",
+                message: "בדיחות דגים קלאסיות",
+                anchorGroup: 'general'
+            }
+        };
+
+        // ** פונקציה חדשה: הגדרת מפתח ה-API **
+        function setApiKey() {
+            const input = document.getElementById('apiKeyInput');
+            const newKey = input.value.trim();
+            if (newKey) {
+                API_KEY = newKey;
+                STATUS_MESSAGE.innerText = "מפתח API נשמר בהצלחה. ניתן לעדכן נתונים!";
+                enableDataButtons(true);
+            } else {
+                API_KEY = "";
+                STATUS_MESSAGE.innerText = "אנא הכנס מפתח API חוקי כדי לאפשר קריאות נתונים.";
+                enableDataButtons(false);
+            }
+        }
+        
+        // ** פונקציה חדשה: הפעלת/השבתת כפתורים **
+        function enableDataButtons(enabled) {
+            document.querySelectorAll('.data-button').forEach(btn => {
+                // רק כפתור הבדיחות נשאר פעיל תמיד
+                if (btn.id !== 'jokesButton') {
+                    btn.disabled = !enabled;
+                }
+            });
+        }
+        
+        async function fetchQuotes(type) {
+            if (!API_KEY && type !== 'jokes') {
+                STATUS_MESSAGE.innerText = "שגיאה: יש להכניס מפתח API לפני קריאת נתונים בזמן אמת.";
+                return;
+            }
+            
+            const promptConfig = API_PROMPTS[type];
+            currentAnchorType = promptConfig.anchorGroup; // עדכן את קבוצת המגישים
+            
+            // ... (קוד טעינת ה-API כפי שהיה)
+            
+            // השבתת כל הכפתורים למניעת קריאות כפולות
+            document.querySelectorAll('.data-button').forEach(btn => btn.disabled = true);
+            STATUS_MESSAGE.innerText = `טוען ${promptConfig.message} (זה עשוי לקחת כמה שניות)...`;
+
+            const payload = {
+                contents: [{ parts: [{ text: promptConfig.query }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: promptConfig.system }]
+                },
+            };
+
+            let attempts = 0;
+            const maxAttempts = 3;
+            let success = false;
+            let newQuotes = [];
+
+            while (attempts < maxAttempts && !success) {
+                attempts++;
+                try {
+                    // ** שימוש במפתח ה-API הגלובלי **
+                    const apiUrlWithKey = API_URL + API_KEY; 
+                    
+                    const response = await fetch(apiUrlWithKey, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                    
+                    if (text) {
+                        newQuotes = text.split('\n')
+                                        .map(line => line.trim())
+                                        .filter(line => line.length > 5);
+                        success = true;
+                    }
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                    if (attempts < maxAttempts) {
+                        const delay = Math.pow(2, attempts) * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            }
+            
+            enableDataButtons(true); // הפעל כפתורים מחדש לאחר סיום הקריאה
+
+            if (newQuotes.length > 0) {
+                fishQuotes = newQuotes;
+                STATUS_MESSAGE.innerText = `הדגים מציגים ${promptConfig.message} (${fishQuotes.length} פריטים)`;
+            } else {
+                fishQuotes = [...ORIGINAL_JOKES];
+                STATUS_MESSAGE.innerText = `שגיאת עדכון: לא ניתן היה לטעון ${promptConfig.message}. חזרנו לבדיחות.`;
+                currentAnchorType = 'general'; // חזרה לקבוצת המגישים הכללית
+            }
+        }
+        
+        // פונקציה כללית לעדכון תוכן (כפתור חדשות, מזג אוויר, בורסה)
+        function updateQuotes(type) {
+            fetchQuotes(type);
+        }
+        
+        // פונקציה לחזרה למערך הבדיחות המקוריות
+        function returnToJokes() {
+            fishQuotes = [...ORIGINAL_JOKES];
+            STATUS_MESSAGE.innerText = 'חזרנו לבדיחות דגים קלאסיות!';
+            currentAnchorType = 'general'; // חזרה לקבוצת המגישים הכללית
+        }
+        
+        // --- לוגיקת דגים ובועות דיבור ---
+        
+        // Clock for animation delta
+        const clock = new THREE.Clock();
+
+        // פונקציה לטעינת דגם הדג (GLB) עם פולבק
+        function createFish() {
+            return new Promise((resolve) => {
+                const loader = new THREE.GLTFLoader();
+                loader.load('https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/clown_fish.glb', (gltf) => {
+                    const fish = gltf.scene;
+                    fish.scale.set(0.05, 0.05, 0.05); // קנה מידה מוקטן
+                    fish.castShadow = true;
+                    fish.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                            if (child.material) {
+                                child.material.envMapIntensity = 4.0;
+                            }
+                        }
+                    });
+
+                    let mixer = null;
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        mixer = new THREE.AnimationMixer(fish);
+                        gltf.animations.forEach((clip) => {
+                            mixer.clipAction(clip).play();
+                        });
+                    }
+
+                    resolve({ fish, mixer });
+                }, undefined, (error) => {
+                    console.error('Error loading GLB model. Using fallback:', error);
+                    // פולבק: דג גיאומטרי פשוט (ספירה שטוחה)
+                    const fishGroup = new THREE.Group();
+                    const bodyGeometry = new THREE.SphereGeometry(1.5, 32, 32, 0, Math.PI * 2, 0, Math.PI);
+                    bodyGeometry.scale(1.0, 0.7, 0.5);
+                    
+                    const fishTexture = new THREE.TextureLoader().load('https://i.imgur.com/Z7y9k5r.jpg');
+                    const bodyMaterial = new THREE.MeshPhysicalMaterial({
+                        map: fishTexture,
+                        roughness: 0.7,
+                        metalness: 0.3,
+                        transparent: true,
+                        opacity: 0.9,
+                        transmission: 0.2,
+                        ior: 1.5,
+                        side: THREE.DoubleSide,
+                        envMapIntensity: 4.0
+                    });
+                    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                    body.castShadow = true;
+                    fishGroup.add(body);
+                    fishGroup.scale.set(0.05, 0.05, 0.05); // קנה מידה מוקטן לפולבק
+                    resolve({ fish: fishGroup, mixer: null });
+                });
+            });
+        }
+
+        // יצירת והצבת הדגים
+        const fishes = [];
+        async function initializeFishes() {
+            // השבת כפתורים עד שמפתח API מוכנס
+            enableDataButtons(false); 
+            
+            for (let i = 0; i < 10; i++) {
+                const { fish, mixer } = await createFish();
+                fish.position.set(
+                    Math.random() * 20 - 10,
+                    Math.random() * 18 - 8,
+                    Math.random() * 20 - 10
+                );
+                fish.rotation.y = Math.random() * Math.PI * 2;
+                scene.add(fish);
+                
+                // אלמנט HTML לבועת הדיבור
+                const bubble = document.createElement('div');
+                bubble.className = 'speech-bubble';
+                bubble.style.display = 'none';
+                document.body.appendChild(bubble);
+
+                // ** חדש: בועת איקון מגיש חדשות **
+                const anchorBubble = document.createElement('div');
+                anchorBubble.className = 'anchor-icon-bubble';
+                document.body.appendChild(anchorBubble);
+                
+                fishes.push({
+                    mesh: fish,
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.05,
+                        (Math.random() - 0.5) * 0.01,
+                        (Math.random() - 0.5) * 0.05
+                    ),
+                    bubble: bubble,
+                    anchorBubble: anchorBubble, // שמירת הפניה לבועת המגיש
+                    bubbleTimer: Math.random() * 5,
+                    directionChangeTimer: Math.random() * 5 + 5,
+                    responseTimer: -1,
+                    mixer: mixer,
+                    // שמירת המגיש הספציפי שהוקצה לדג
+                    assignedAnchor: ANCHOR_GROUPS[currentAnchorType][i % ANCHOR_GROUPS[currentAnchorType].length]
+                });
+            }
+        }
+
+        initializeFishes();
+
+        // בועות אוויר עולות
+        const bubbleGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+        const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.7,
+            roughness: 0.1,
+            metalness: 0.0,
+            transmission: 1.0,
+            ior: 1.01,
+            emissive: 0xffffff,
+            emissiveIntensity: 0.2
+        });
+        const bubbles = [];
+        for (let i = 0; i < 50; i++) {
+            const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
+            bubble.position.set(
+                Math.random() * 20 - 10,
+                -10,
+                Math.random() * 20 - 10
+            );
+            scene.add(bubble);
+            bubbles.push({
+                mesh: bubble,
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.005,
+                    Math.random() * 0.05 + 0.02,
+                    (Math.random() - 0.5) * 0.005
+                )
+            });
+        }
+
+        // --- לוגיקת הסתרת UI ---
+        let uiTimeout;
+        const uiContainer = document.getElementById('ui-container');
+
+        function hideUI() {
+            uiContainer.classList.add('hidden');
+        }
+
+        function showUI() {
+            uiContainer.classList.remove('hidden');
+            clearTimeout(uiTimeout);
+            uiTimeout = setTimeout(hideUI, 5000); // 5 שניות
+        }
+        
+        // הצג UI בהתחלה והגדר טיימר
+        showUI(); 
+        
+        // מאזינים לתנועת עכבר ונגיעה
+        window.addEventListener('mousemove', showUI);
+        window.addEventListener('touchstart', showUI);
+
+        // לולאת האנימציה הראשית
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const elapsedTime = clock.getElapsedTime(); 
+            
+            // עדכון רזולוציה וזמן לשיידר הרקע
+            backgroundMaterial.uniforms.u_time.value = elapsedTime;
+            backgroundMaterial.uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+
+
+            // ** 2. עדכון דגים **
+            fishes.forEach((fish, index) => {
+                if (fish.mixer) {
+                    fish.mixer.update(delta);
+                }
+
+                const pos = fish.mesh.position;
+                pos.add(fish.velocity);
+
+                const bounds = 15;
+                const heightBound = 10;
+
+                if (pos.x >= bounds - 0.1 || pos.x <= -bounds + 0.1) fish.velocity.x *= -1;
+                if (pos.y >= heightBound - 0.1 || pos.y <= -heightBound + 0.1) fish.velocity.y *= -1;
+                if (pos.z >= bounds - 0.1 || pos.z <= -bounds + 0.1) fish.velocity.z *= -1;
+
+                pos.x = Math.max(-bounds + 0.1, Math.min(bounds - 0.1, pos.x));
+                pos.y = Math.max(-heightBound + 0.1, Math.min(heightBound - 0.1, pos.y));
+                pos.z = Math.max(-bounds + 0.1, Math.min(bounds - 0.1, pos.z));
+
+                fish.directionChangeTimer -= delta;
+                if (fish.directionChangeTimer <= 0) {
+                    fish.velocity.set(
+                        (Math.random() - 0.5) * 0.05,
+                        (Math.random() - 0.5) * 0.01,
+                        (Math.random() - 0.5) * 0.05
+                    ).normalize().multiplyScalar(0.05);
+                    fish.directionChangeTimer = Math.random() * 5 + 5;
+                }
+
+                const targetRotation = Math.atan2(fish.velocity.x, fish.velocity.z);
+                fish.mesh.rotation.y += (targetRotation - fish.mesh.rotation.y) * 0.05;
+
+                // לוגיקת בועת הדיבור
+                fish.bubbleTimer += delta;
+                
+                // עדכון המגיש לדג
+                const anchorData = ANCHOR_GROUPS[currentAnchorType][index % ANCHOR_GROUPS[currentAnchorType].length];
+                fish.anchorBubble.innerHTML = `${anchorData.icon} ${anchorData.name}`;
+
+                if (fish.bubble.style.display === 'block') {
+                     fish.anchorBubble.style.display = 'block';
+                } else {
+                     fish.anchorBubble.style.display = 'none';
+                }
+
+                if (fish.bubbleTimer > 5 && fish.responseTimer < 0) {
+                    if(fishQuotes.length === 0) return; // אם אין תוכן, אל תנסה לדבר
+
+                    const quote = fishQuotes[Math.floor(Math.random() * fishQuotes.length)];
+                    const duration = getBubbleDuration(quote); // קבל את משך הצפייה המותאם
+                    
+                    fish.bubbleTimer = Math.random() * -5;
+                    fish.bubble.innerText = quote;
+                    fish.bubble.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        fish.bubble.style.display = 'none';
+                    }, duration); 
+                                        
+                    let closestFish = null;
+                    let minDist = Infinity;
+                    fishes.forEach((otherFish, otherIndex) => {
+                        if (otherIndex !== index && otherFish.responseTimer < 0) {
+                            const dist = pos.distanceTo(otherFish.mesh.position);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                closestFish = otherFish;
+                            }
+                        }
+                    });
+                    if (closestFish && minDist < 10 && Math.random() > 0.6) {
+                        closestFish.responseTimer = Math.random() * 1 + 1.5;
+                    }
+                }
+
+                // לוגיקת תגובה לדיבור
+                if (fish.responseTimer > 0) {
+                    fish.responseTimer -= delta;
+                    if (fish.responseTimer <= 0) {
+                        if(fishQuotes.length === 0) return;
+
+                        const quote = fishQuotes[Math.floor(Math.random() * fishQuotes.length)];
+                        const duration = getBubbleDuration(quote); // קבל את משך הצפייה המותאם
+
+                        fish.bubble.innerText = quote;
+                        fish.bubble.style.display = 'block';
+                        setTimeout(() => {
+                            fish.bubble.style.display = 'none';
+                        }, duration); 
+                        fish.responseTimer = -1;
+                    }
+                }
+
+                // ** מיקום בועות ה-HTML **
+                const vector = new THREE.Vector3();
+                fish.mesh.getWorldPosition(vector);
+                
+                vector.project(camera); 
+                
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+                
+                // בועת הטקסט ממוקמת ב-y
+                fish.bubble.style.left = `${x}px`;
+                fish.bubble.style.top = `${y}px`;
+                
+                // בועת המגיש ממוקמת מעל בועת הטקסט (קיזוז גדול)
+                fish.anchorBubble.style.left = `${x}px`;
+                fish.anchorBubble.style.top = `${y - 160}px`; 
+            });
+            
+            // עדכון בועות אוויר
+            bubbles.forEach(bubble => {
+                bubble.mesh.position.add(bubble.velocity);
+                
+                if (bubble.mesh.position.y > 10) {
+                    bubble.mesh.position.y = -10;
+                    bubble.mesh.position.x = Math.random() * 20 - 10;
+                    bubble.mesh.position.z = Math.random() * 20 - 10;
+                    bubble.velocity.y = Math.random() * 0.05 + 0.02;
+                }
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // טיפול בשינוי גודל החלון
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            backgroundMaterial.uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+        });
+        
+        // הפעלת לולאת האנימציה עם טעינת החלון
+        window.onload = function () {
+            animate();
+        }
+    </script>
+</body>
+</html>
