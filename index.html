@@ -61,26 +61,57 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
             display: none; /* מוסתר בהתחלה */
         }
-        /* סגנון לכפתור ולמצב טעינה */
+        
+        /* --- סגנון תפריט נשלף (Off-Canvas) --- */
         #ui-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            position: fixed; /* שינוי מ-absolute ל-fixed */
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 320px; /* רוחב בסיסי */
+            max-width: 90vw; /* רוחב מקסימלי למובייל */
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             z-index: 20;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 8px;
-            transition: opacity 0.5s ease-in-out;
-            border: 1px solid #00ffff; /* סגנון סייבר */
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            border-left: 2px solid #00ffff; /* סגנון סייבר */
+            transform: translateX(100%); /* ** מחוץ למסך ** */
+            transition: transform 0.3s ease-in-out;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
-        #ui-container.hidden {
-            opacity: 0;
-            pointer-events: none;
+        #ui-container.visible {
+            transform: translateX(0); /* ** בתוך המסך ** */
         }
+
+        /* לשונית חשיפת תפריט */
+        #toggle-tab {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%) translateX(100%);
+            padding: 10px 15px;
+            background: #003366;
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            border-right: none;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+            cursor: pointer;
+            z-index: 21; /* מעל התפריט כשהוא מוסתר */
+            transition: transform 0.3s ease-in-out;
+            font-weight: bold;
+            text-align: center;
+        }
+        #toggle-tab.active {
+            transform: translateY(-50%) translateX(320px); /* זז שמאלה כשמוצג */
+        }
+
+        /* אלמנטים פנימיים */
         .data-button {
+            /* ... (ללא שינוי מהותי) */
             background-color: #0077b6;
             color: white;
             border: none;
@@ -91,9 +122,9 @@
             cursor: pointer;
             transition: background-color 0.3s;
             margin-top: 8px;
-            width: 100%; /* כדי שכל הכפתורים יהיו באותו רוחב */
+            width: 100%; 
             box-sizing: border-box;
-            border: 2px solid #00ffff; /* סגנון סייבר */
+            border: 2px solid #00ffff; 
             background: #003366;
             color: #00ffff;
         }
@@ -121,9 +152,10 @@
             font-weight: 500;
             direction: rtl;
             text-align: right;
-            max-width: 250px;
+            max-width: 100%;
         }
         .api-input-group {
+            /* ... (ללא שינוי מהותי) */
             display: flex;
             flex-direction: column;
             align-items: flex-end;
@@ -133,6 +165,7 @@
             width: 100%;
         }
         .api-input-group input {
+            /* ... (ללא שינוי מהותי) */
             width: 100%;
             padding: 8px;
             margin-top: 5px;
@@ -145,6 +178,7 @@
             direction: ltr;
         }
         .api-input-group button {
+            /* ... (ללא שינוי מהותי) */
             margin-top: 5px;
             padding: 5px 10px;
             background: #00ffff;
@@ -153,6 +187,25 @@
             border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
+        }
+        #pauseButton {
+            background-color: #D32F2F; /* אדום/כתום */
+            margin-top: 16px;
+            border: 2px solid #FF5722;
+            background: #791e1e;
+            color: #FFCDD2;
+        }
+        #pauseButton:hover:not(:disabled) {
+            background-color: #5d1616;
+        }
+        /* התאמה למובייל */
+        @media (max-width: 600px) {
+            #ui-container {
+                width: 90vw;
+            }
+            #toggle-tab.active {
+                transform: translateY(-50%) translateX(90vw); /* זז שמאלה בהתאם לרוחב המובייל */
+            }
         }
     </style>
 </head>
@@ -171,9 +224,13 @@
         <button id="stockButton" class="data-button" onclick="updateQuotes('stock')">נתוני בורסה (חצים)</button>
         <button id="weatherButton" class="data-button" onclick="updateQuotes('weather')">מזג אוויר (איקונים)</button>
         
+        <!-- כפתור הקפאה חדש --><button id="pauseButton" onclick="togglePause()">הקפאה / המשך</button>
         <!-- כפתור חזרה לבדיחות --><button id="jokesButton" class="data-button" onclick="returnToJokes()">חזרה לבדיחות דגים</button>
 
         <div id="statusMessage"></div>
+    </div>
+    <!-- לשונית לחשיפת התפריט --><div id="toggle-tab" onclick="toggleMenu()">
+        תפריט
     </div>
     <!-- טעינת ספריות Three.js מהרשת --><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
@@ -186,7 +243,9 @@
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`;
         
         const STATUS_MESSAGE = document.getElementById('statusMessage');
-
+        let isPaused = false; // ** משתנה חדש: מצב הקפאה **
+        let isMenuVisible = false; // ** חדש: מצב תפריט **
+        
         // רשימת מגישי חדשות ישראלים (לשימוש באיקון בועה)
         const ANCHOR_GROUPS = {
             general: [
@@ -810,7 +869,55 @@
             STATUS_MESSAGE.innerText = 'חזרנו לבדיחות דגים קלאסיות!';
             currentAnchorType = 'general'; // חזרה לקבוצת המגישים הכללית
         }
+
+        // ** פונקציה חדשה: הקפאה/המשך **
+        function togglePause() {
+            isPaused = !isPaused;
+            const button = document.getElementById('pauseButton');
+            button.innerText = isPaused ? "המשך (מוקפא)" : "הקפאה / המשך";
+
+            // הסתר את כל בועות ה-HTML במצב מוקפא
+            if (isPaused) {
+                // ** שינוי: הבועות נשארות גלויות (block) במצב מוקפא **
+                fishes.forEach(fish => {
+                    if (fish.bubble.style.display === 'block') {
+                        // אם הייתה גלויה, השאר אותה גלויה
+                        fish.isFrozenVisible = true;
+                    } else {
+                        fish.isFrozenVisible = false;
+                    }
+                });
+                STATUS_MESSAGE.innerText = "האקווריום והמידע מוקפאים. תנועת המצלמה עדיין פעילה.";
+                controls.enabled = false; // הקפאת תנועת מצלמה
+            } else {
+                // חזרה לפעילות
+                fishes.forEach(fish => {
+                    fish.isFrozenVisible = false;
+                    // כל הבועות שהיו מוקפאות נעלמות עם ההמשך
+                    fish.bubble.style.display = 'none';
+                    fish.anchorBubble.style.display = 'none';
+                });
+
+                STATUS_MESSAGE.innerText = "האקווריום חזר לפעילות מלאה.";
+                controls.enabled = true; // המשך תנועת מצלמה
+            }
+        }
         
+        // ** פונקציה חדשה: פתיחה/סגירת תפריט **
+        function toggleMenu() {
+            isMenuVisible = !isMenuVisible;
+            const uiContainer = document.getElementById('ui-container');
+            const toggleTab = document.getElementById('toggle-tab');
+            
+            if (isMenuVisible) {
+                uiContainer.classList.add('visible');
+                toggleTab.classList.add('active');
+            } else {
+                uiContainer.classList.remove('visible');
+                toggleTab.classList.remove('active');
+            }
+        }
+
         // --- לוגיקת דגים ובועות דיבור ---
         
         // Clock for animation delta
@@ -911,6 +1018,7 @@
                     directionChangeTimer: Math.random() * 5 + 5,
                     responseTimer: -1,
                     mixer: mixer,
+                    isFrozenVisible: false, // ** חדש: האם הבועה גלויה כשהממשק מוקפא? **
                     // שמירת המגיש הספציפי שהוקצה לדג
                     assignedAnchor: ANCHOR_GROUPS[currentAnchorType][i % ANCHOR_GROUPS[currentAnchorType].length]
                 });
@@ -951,22 +1059,37 @@
             });
         }
 
-        // --- לוגיקת הסתרת UI ---
+        // --- לוגיקת הסתרת UI (הוסר ומוחלף ב-toggleMenu) ---
         let uiTimeout;
         const uiContainer = document.getElementById('ui-container');
-
+        const toggleTab = document.getElementById('toggle-tab');
+        
+        // לוגיקת הסתרת UI אוטומטית (עובדת רק על הסתרת הלשונית)
         function hideUI() {
-            uiContainer.classList.add('hidden');
+            if (!isMenuVisible) {
+                uiContainer.classList.remove('visible');
+                toggleTab.style.transform = 'translateY(-50%) translateX(0)';
+            }
         }
 
         function showUI() {
-            uiContainer.classList.remove('hidden');
             clearTimeout(uiTimeout);
-            uiTimeout = setTimeout(hideUI, 5000); // 5 שניות
+            
+            // הצגת הלשונית (במקום הקונטיינר)
+            toggleTab.style.transform = 'translateY(-50%) translateX(0)';
+
+            uiTimeout = setTimeout(() => {
+                // הסתרת הלשונית, אם התפריט לא גלוי
+                if (!isMenuVisible) {
+                    const width = uiContainer.offsetWidth; // קבל רוחב דינמי
+                    toggleTab.style.transform = `translateY(-50%) translateX(calc(100% - ${width}px - 10px))`;
+                }
+            }, 5000); // 5 שניות
         }
         
-        // הצג UI בהתחלה והגדר טיימר
-        showUI(); 
+        // הגדרת מצב התפריט ההתחלתי (מוסתר)
+        toggleMenu(); // הפעלה ראשונית לסגירה
+        toggleTab.style.transform = 'translateY(-50%) translateX(0)'; // וודא שהלשונית גלויה
         
         // מאזינים לתנועת עכבר ונגיעה
         window.addEventListener('mousemove', showUI);
@@ -986,98 +1109,109 @@
             // ** 2. עדכון דגים **
             fishes.forEach((fish, index) => {
                 if (fish.mixer) {
-                    fish.mixer.update(delta);
+                    fish.mixer.update(delta); // ** ממשיך לרוץ גם בהקפאה (תנועת סנפירים) **
                 }
 
-                const pos = fish.mesh.position;
-                pos.add(fish.velocity);
+                if (!isPaused) { // ** רק אם לא מוקפא: תנועה ולוגיקת בועות **
+                    const pos = fish.mesh.position;
+                    pos.add(fish.velocity);
 
-                const bounds = 15;
-                const heightBound = 10;
+                    const bounds = 15;
+                    const heightBound = 10;
 
-                if (pos.x >= bounds - 0.1 || pos.x <= -bounds + 0.1) fish.velocity.x *= -1;
-                if (pos.y >= heightBound - 0.1 || pos.y <= -heightBound + 0.1) fish.velocity.y *= -1;
-                if (pos.z >= bounds - 0.1 || pos.z <= -bounds + 0.1) fish.velocity.z *= -1;
+                    if (pos.x >= bounds - 0.1 || pos.x <= -bounds + 0.1) fish.velocity.x *= -1;
+                    if (pos.y >= heightBound - 0.1 || pos.y <= -heightBound + 0.1) fish.velocity.y *= -1;
+                    if (pos.z >= bounds - 0.1 || pos.z <= -bounds + 0.1) fish.velocity.z *= -1;
 
-                pos.x = Math.max(-bounds + 0.1, Math.min(bounds - 0.1, pos.x));
-                pos.y = Math.max(-heightBound + 0.1, Math.min(heightBound - 0.1, pos.y));
-                pos.z = Math.max(-bounds + 0.1, Math.min(bounds - 0.1, pos.z));
+                    pos.x = Math.max(-bounds + 0.1, Math.min(bounds - 0.1, pos.x));
+                    pos.y = Math.max(-heightBound + 0.1, Math.min(heightBound - 0.1, pos.y));
+                    pos.z = Math.max(-bounds + 0.1, Math.min(bounds - 0.1, pos.z));
 
-                fish.directionChangeTimer -= delta;
-                if (fish.directionChangeTimer <= 0) {
-                    fish.velocity.set(
-                        (Math.random() - 0.5) * 0.05,
-                        (Math.random() - 0.5) * 0.01,
-                        (Math.random() - 0.5) * 0.05
-                    ).normalize().multiplyScalar(0.05);
-                    fish.directionChangeTimer = Math.random() * 5 + 5;
-                }
+                    fish.directionChangeTimer -= delta;
+                    if (fish.directionChangeTimer <= 0) {
+                        fish.velocity.set(
+                            (Math.random() - 0.5) * 0.05,
+                            (Math.random() - 0.5) * 0.01,
+                            (Math.random() - 0.5) * 0.05
+                        ).normalize().multiplyScalar(0.05);
+                        fish.directionChangeTimer = Math.random() * 5 + 5;
+                    }
 
-                const targetRotation = Math.atan2(fish.velocity.x, fish.velocity.z);
-                fish.mesh.rotation.y += (targetRotation - fish.mesh.rotation.y) * 0.05;
+                    const targetRotation = Math.atan2(fish.velocity.x, fish.velocity.z);
+                    fish.mesh.rotation.y += (targetRotation - fish.mesh.rotation.y) * 0.05;
 
-                // לוגיקת בועת הדיבור
-                fish.bubbleTimer += delta;
+                    // לוגיקת בועת הדיבור (דיבור אקראי)
+                    fish.bubbleTimer += delta;
+                    if (fish.bubbleTimer > 5 && fish.responseTimer < 0) {
+                        if(fishQuotes.length === 0) return;
+
+                        const quote = fishQuotes[Math.floor(Math.random() * fishQuotes.length)];
+                        const duration = getBubbleDuration(quote);
+                        
+                        fish.bubbleTimer = Math.random() * -5;
+                        fish.bubble.innerText = quote;
+                        fish.bubble.style.display = 'block';
+                        
+                        setTimeout(() => {
+                            if (!isPaused) fish.bubble.style.display = 'none';
+                        }, duration); 
+                                            
+                        let closestFish = null;
+                        let minDist = Infinity;
+                        fishes.forEach((otherFish, otherIndex) => {
+                            if (otherIndex !== index && otherFish.responseTimer < 0) {
+                                const dist = pos.distanceTo(otherFish.mesh.position);
+                                if (dist < minDist) {
+                                    minDist = dist;
+                                    closestFish = otherFish;
+                                }
+                            }
+                        });
+                        if (closestFish && minDist < 10 && Math.random() > 0.6) {
+                            closestFish.responseTimer = Math.random() * 1 + 1.5;
+                        }
+                    }
+
+                    // לוגיקת תגובה לדיבור
+                    if (fish.responseTimer > 0) {
+                        fish.responseTimer -= delta;
+                        if (fish.responseTimer <= 0) {
+                            if(fishQuotes.length === 0) return;
+
+                            const quote = fishQuotes[Math.floor(Math.random() * fishQuotes.length)];
+                            const duration = getBubbleDuration(quote);
+
+                            fish.bubble.innerText = quote;
+                            fish.bubble.style.display = 'block';
+                            setTimeout(() => {
+                                if (!isPaused) fish.bubble.style.display = 'none';
+                            }, duration); 
+                            fish.responseTimer = -1;
+                        }
+                    }
+                } // סוף תנאי !isPaused
+
                 
-                // עדכון המגיש לדג
+                // עדכון המגיש לדג (נעשה תמיד, המיקום הגיאומטרי חשוב)
                 const anchorData = ANCHOR_GROUPS[currentAnchorType][index % ANCHOR_GROUPS[currentAnchorType].length];
                 fish.anchorBubble.innerHTML = `${anchorData.icon} ${anchorData.name}`;
 
-                if (fish.bubble.style.display === 'block') {
+                // ** לוגיקת הצגה/הסתרת בועות במצב הקפאה **
+                if (isPaused) {
+                    if (fish.isFrozenVisible) {
+                        fish.bubble.style.display = 'block';
+                        fish.anchorBubble.style.display = 'block';
+                    } else {
+                        fish.bubble.style.display = 'none';
+                        fish.anchorBubble.style.display = 'none';
+                    }
+                } else if (fish.bubble.style.display === 'block') {
                      fish.anchorBubble.style.display = 'block';
                 } else {
                      fish.anchorBubble.style.display = 'none';
                 }
 
-                if (fish.bubbleTimer > 5 && fish.responseTimer < 0) {
-                    if(fishQuotes.length === 0) return; // אם אין תוכן, אל תנסה לדבר
-
-                    const quote = fishQuotes[Math.floor(Math.random() * fishQuotes.length)];
-                    const duration = getBubbleDuration(quote); // קבל את משך הצפייה המותאם
-                    
-                    fish.bubbleTimer = Math.random() * -5;
-                    fish.bubble.innerText = quote;
-                    fish.bubble.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        fish.bubble.style.display = 'none';
-                    }, duration); 
-                                        
-                    let closestFish = null;
-                    let minDist = Infinity;
-                    fishes.forEach((otherFish, otherIndex) => {
-                        if (otherIndex !== index && otherFish.responseTimer < 0) {
-                            const dist = pos.distanceTo(otherFish.mesh.position);
-                            if (dist < minDist) {
-                                minDist = dist;
-                                closestFish = otherFish;
-                            }
-                        }
-                    });
-                    if (closestFish && minDist < 10 && Math.random() > 0.6) {
-                        closestFish.responseTimer = Math.random() * 1 + 1.5;
-                    }
-                }
-
-                // לוגיקת תגובה לדיבור
-                if (fish.responseTimer > 0) {
-                    fish.responseTimer -= delta;
-                    if (fish.responseTimer <= 0) {
-                        if(fishQuotes.length === 0) return;
-
-                        const quote = fishQuotes[Math.floor(Math.random() * fishQuotes.length)];
-                        const duration = getBubbleDuration(quote); // קבל את משך הצפייה המותאם
-
-                        fish.bubble.innerText = quote;
-                        fish.bubble.style.display = 'block';
-                        setTimeout(() => {
-                            fish.bubble.style.display = 'none';
-                        }, duration); 
-                        fish.responseTimer = -1;
-                    }
-                }
-
-                // ** מיקום בועות ה-HTML **
+                // ** מיקום בועות ה-HTML (מתרחש תמיד כדי לעקוב אחר הדג) **
                 const vector = new THREE.Vector3();
                 fish.mesh.getWorldPosition(vector);
                 
@@ -1096,16 +1230,18 @@
             });
             
             // עדכון בועות אוויר
-            bubbles.forEach(bubble => {
-                bubble.mesh.position.add(bubble.velocity);
-                
-                if (bubble.mesh.position.y > 10) {
-                    bubble.mesh.position.y = -10;
-                    bubble.mesh.position.x = Math.random() * 20 - 10;
-                    bubble.mesh.position.z = Math.random() * 20 - 10;
-                    bubble.velocity.y = Math.random() * 0.05 + 0.02;
-                }
-            });
+            if (!isPaused) {
+                bubbles.forEach(bubble => {
+                    bubble.mesh.position.add(bubble.velocity);
+                    
+                    if (bubble.mesh.position.y > 10) {
+                        bubble.mesh.position.y = -10;
+                        bubble.mesh.position.x = Math.random() * 20 - 10;
+                        bubble.mesh.position.z = Math.random() * 20 - 10;
+                        bubble.velocity.y = Math.random() * 0.05 + 0.02;
+                    }
+                });
+            }
 
             controls.update();
             renderer.render(scene, camera);
@@ -1117,11 +1253,27 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             backgroundMaterial.uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+            
+            // עדכון מיקום הלשונית במובייל/שינוי גודל
+            if (isMenuVisible) {
+                 // דוחף את הלשונית החוצה כאשר התפריט פתוח
+                 const uiWidth = uiContainer.offsetWidth;
+                 toggleTab.style.transform = `translateY(-50%) translateX(${uiWidth}px)`;
+            } else {
+                 // מחזיר את הלשונית למצב סגור
+                 toggleTab.style.transform = `translateY(-50%) translateX(0)`;
+            }
+
         });
         
         // הפעלת לולאת האנימציה עם טעינת החלון
         window.onload = function () {
             animate();
+            
+            // ודא שהלשונית ממוקמת נכון לאחר טעינה ראשונית
+            setTimeout(() => {
+                toggleMenu(); // סוגר את התפריט
+            }, 50); 
         }
     </script>
 </body>
