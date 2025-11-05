@@ -318,11 +318,12 @@
                 display: flex;
                 flex-direction: column; /* הצג כעמודה */
                 width: 100%;
-                top: 0;
+                top: 70px; /* ** שינוי: מתחיל מתחת לכפתור ההמבורגר (50px גובה + 10px רווח + 10px רווח) ** */
                 left: 0;
                 border-radius: 0;
                 padding: 10px;
                 box-sizing: border-box; /* ודא שהריפוד לא שובר את הרוחב */
+                height: auto; /* ** ודא שהגובה אוטומטי ** */
             }
             
             #controls-group {
@@ -1452,5 +1453,3 @@
     </script>
 </body>
 </html>
-
-
