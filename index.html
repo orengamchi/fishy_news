@@ -74,33 +74,30 @@
             flex-direction: row; 
             align-items: center;
             z-index: 20;
-            padding: 5px; /* ** צר יותר ** */
+            padding: 5px; 
             background: #000;
-            /* ** מראה הניאון מהתמונה ** */
             border: 2px solid #00ffff; 
             box-shadow: 0 0 10px #00ffff55; 
             border-radius: 12px;
-            transition: opacity 0.5s ease-in-out; /* ** שינוי: טרנזיציית הסתרה ** */
+            transition: opacity 0.5s ease-in-out; /* טרנזיציית הסתרה */
             box-sizing: border-box;
             overflow: hidden; 
         }
         
-        /* ** הסתרה/חשיפה של כל התפריט ** */
+        /* הסתרה/חשיפה של כל התפריט (למחשב) */
         #ui-container.hidden {
             opacity: 0;
             pointer-events: none;
         }
 
-        /* ** מכולת הכפתורים המינימליסטיים ** */
         #controls-group {
             display: flex;
             flex-wrap: nowrap; 
-            gap: 5px; /* ** צמוד יותר ** */
+            gap: 5px; 
             height: auto;
             margin: 0; 
             padding-right: 5px;
         }
-        /* סגנון כפתורי איקונים (מרובעים, כמו בתמונה) */
         .icon-button {
             width: 45px; 
             height: 45px;
@@ -108,17 +105,15 @@
             font-size: 20px; 
             line-height: 45px;
             text-align: center;
-            
-            border-radius: 8px; /* מרובע יותר */
+            border-radius: 8px; 
             cursor: pointer;
             transition: all 0.2s;
             box-sizing: border-box;
-            
             background: #003366;
-            color: white; /* טקסט לבן לאיקונים */
-            border: 2px solid #00ffff; /* מסגרת ניאון */
+            color: white; 
+            border: 2px solid #00ffff; 
             box-shadow: 0 0 5px #00ffff55;
-            flex-shrink: 0; /* לא יתכווץ במובייל */
+            flex-shrink: 0; 
         }
         .icon-button:hover:not(:disabled) {
             background-color: #0055aa;
@@ -130,12 +125,11 @@
             transform: none;
         }
         
-        /* כפתורי מצב (בדיחות/הקפאה) */
         #jokesButton, #pauseButton, #apiButton {
             width: 45px;
             height: 45px;
             padding: 0;
-            margin: 0 5px; /* צמוד יותר */
+            margin: 0 5px; 
             font-size: 20px;
             border-radius: 8px;
             box-sizing: border-box;
@@ -145,24 +139,18 @@
             justify-content: center;
             flex-shrink: 0;
         }
-
-        /* כפתור בדיחות מותאם (ירוק) */
         #jokesButton {
             background: #225522;
             color: #66BB6A;
             border: 2px solid #66BB6A;
             box-shadow: 0 0 5px #66BB6A55;
         }
-        
-        /* כפתור הקפאה מותאם (אדום) */
         #pauseButton {
             background: #791e1e;
             color: #FFCDD2;
             border: 2px solid #FF5722;
             box-shadow: 0 0 5px #FF572255;
         }
-        
-        /* כפתור API (כתום-צהוב) */
         #apiButton {
             background: #6d4d00;
             color: #FFD700;
@@ -170,7 +158,6 @@
             box-shadow: 0 0 5px #FFD70055;
         }
 
-        /* תיבת סטטוס (בצד ימין בתפריט) */
         #statusMessage {
             margin-right: 15px; 
             font-size: 14px;
@@ -236,20 +223,153 @@
             background: #e0b000;
         }
 
+        /* --- מודאל מידע (i) חדש (מוסתר) --- */
+        #info-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 101; /* Above API modal */
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        #info-modal-content {
+            background: #111;
+            padding: 25px;
+            border-radius: 12px;
+            border: 3px solid #00ffff; /* Cyan border */
+            box-shadow: 0 0 20px #00ffff55;
+            width: 90%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            direction: rtl;
+            text-align: center;
+            color: #eee;
+        }
+        #info-modal-content img {
+            width: 100%;
+            max-width: 250px; /* Control image size */
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #00ffff;
+        }
+        #info-modal-content p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        #info-modal-content button {
+            padding: 10px 20px;
+            background: #00ffff;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #info-modal-content button:hover {
+            background: #99ffff;
+        }
 
-        /* התאמה למובייל */
+        /* --- (חדש) כפתור המבורגר למובייל --- */
+        #hamburger-menu {
+            display: none; /* מוסתר במחשב */
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            background: #000;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 10px #00ffff55;
+            border-radius: 8px;
+            color: #00ffff;
+            font-size: 30px;
+            line-height: 48px;
+            text-align: center;
+            cursor: pointer;
+            z-index: 21; /* מעל התפריט הראשי */
+        }
+
+
+        /* --- (חדש) התאמה למובייל (600px ומטה) --- */
         @media (max-width: 600px) {
+            
+            /* הסתר את התפריט העליון הקבוע (גרסת מחשב) */
             #ui-container {
-                left: 0;
-                right: 0;
-                width: 100%;
-                border-radius: 0;
+                display: none; 
             }
+            
+            /* הצג את כפתור ההמבורגר */
+            #hamburger-menu {
+                display: block;
+            }
+
+            /* הגדרות התפריט במצב מובייל (כאשר הוא נפתח) */
+            #ui-container.mobile-active {
+                display: flex;
+                flex-direction: column; /* הצג כעמודה */
+                width: 100%;
+                top: 70px; /* ** שינוי: מתחיל מתחת לכפתור ההמבורגר (50px גובה + 10px רווח + 10px רווח) ** */
+                left: 0;
+                border-radius: 0;
+                padding: 10px;
+                box-sizing: border-box; /* ודא שהריפוד לא שובר את הרוחב */
+                height: auto; /* ** ודא שהגובה אוטומטי ** */
+            }
+            
             #controls-group {
-                /* במובייל מאפשר שבירת שורה כדי שהכפתורים לא יידחסו */
-                flex-wrap: wrap; 
+                flex-wrap: wrap; /* אפשר שבירת שורה לכפתורים */
                 justify-content: flex-start;
-                gap: 5px;
+                gap: 8px;
+            }
+            
+            /* הגדל מעט כפתורים במובייל לנגיעה קלה */
+            .icon-button {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                line-height: 50px;
+            }
+            #jokesButton, #pauseButton, #apiButton {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                line-height: 50px;
+            }
+            
+            #statusMessage {
+                margin-top: 10px;
+                white-space: normal; /* אפשר שבירת שורה להודעות סטטוס */
+                max-width: 100%;
+            }
+
+            /* ** (תיקון) הקטנת מודאל המידע (i) במובייל ** */
+            #info-modal-content {
+                padding: 15px; /* פחות ריפוד */
+                width: 90%; 
+                max-height: 80vh; /* גובה מקסימלי למסך */
+                overflow-y: auto; /* מאפשר גלילה פנימית אם התוכן ארוך */
+                box-sizing: border-box; /* לוודא שהריפוד נכלל ברוחב */
+            }
+            #info-modal-content img {
+                max-width: 150px; /* תמונה קטנה יותר */
+                margin-bottom: 15px;
+            }
+            #info-modal-content p {
+                font-size: 14px; /* טקסט קטן יותר */
+                margin-bottom: 15px;
+            }
+            #info-modal-content button {
+                padding: 10px 15px; /* כפתור סגירה קטן יותר */
             }
         }
     </style>
@@ -266,6 +386,18 @@
         </div>
     </div>
 
+    <!-- מודאל מידע (i) -->
+    <div id="info-modal" onclick="hideInfoModal()">
+        <div id="info-modal-content" onclick="event.stopPropagation()">
+            <img src="https://raw.githubusercontent.com/orengamchi/fishy_news/main/WhatsApp%20Image%202025-11-05%20at%2006.39.54.jpeg" alt="דיילי הדג">
+            <p>הממשק מוקדש לדיילי הדג שילווה אותנו במים סוערים בלי להוציא מילה, יהיה זכרו ברוך.</p>
+            <button onclick="hideInfoModal()">סגור</button>
+        </div>
+    </div>
+
+    <!-- (חדש) כפתור המבורגר (מוסתר במחשב) -->
+    <div id="hamburger-menu">☰</div>
+
     <div id="ui-container">
         <!-- כפתורי איקונים דינמיים (בשורה) -->
         <div id="controls-group">
@@ -275,6 +407,7 @@
             <button class="icon-button data-button" id="sportButton" onclick="updateQuotes('sport')" title="ספורט">⚽</button>
             <button class="icon-button data-button" id="stockButton" onclick="updateQuotes('stock')" title="בורסה">💰</button>
             <button class="icon-button data-button" id="weatherButton" onclick="updateQuotes('weather')" title="מזג אוויר">☀️</button>
+            <button id="infoButton" class="icon-button" onclick="showInfoModal()" title="אודות">ℹ️</button>
         </div>
         
         <!-- כפתור הקפאה -->
@@ -295,16 +428,13 @@
     
     <script>
         // --- קבועים ומשתנים גלובליים ---
-        let API_KEY = ""; // כעת מפתח ה-API הוא משתנה גלובלי
+        let API_KEY = ""; 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`;
         
         const STATUS_MESSAGE = document.getElementById('statusMessage');
         let isPaused = false; 
-        
-        // ** הגדרה גלובלית מוקדמת של fishes **
         const fishes = []; 
 
-        // רשימת מגישי חדשות ישראלים (לשימוש באיקון בועה)
         const ANCHOR_GROUPS = {
             general: [
                 { name: "יונית לוי", icon: "📺" },
@@ -341,12 +471,10 @@
         };
         let currentAnchorType = 'general'; 
 
-        // הגדרות סצנה
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 
-        // הגדרות הרנדרר
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -354,8 +482,33 @@
         renderer.toneMappingExposure = 1.0;
         document.body.appendChild(renderer.domElement);
 
+        // --- (חדש) מאזינים ללחיצה כפולה / הקשה כפולה להקפאה ---
+        let lastTap = 0;
+        renderer.domElement.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            togglePause();
+        });
+
+        renderer.domElement.addEventListener('touchstart', (e) => {
+            // מאזין זה קיים למטה עבור לחיצה כפולה, אך אנו מוסיפים כאן את תחילת הצביטה
+            if (e.touches.length === 2) {
+                lastPinchDist = getPinchDist(e);
+            }
+
+            // לוגיקת הקשה כפולה
+            if (e.touches.length === 1) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) {
+                    // זוהי הקשה כפולה
+                    e.preventDefault();
+                    togglePause();
+                }
+                lastTap = currentTime;
+            }
+        }, { passive: true }); // passive: true כדי לאפשר התנהגות ברירת מחדל אם זו לא הקשה כפולה
+
         // --- בקרות ומצלמה ---
-        
         camera.position.set(1, -3, 10); 
         camera.lookAt(5, -5, 5); 
 
@@ -373,8 +526,55 @@
         
         controls.enableZoom = false; 
 
+        // --- (חדש) לוגיקת זום ידנית (FOV) ---
+        const MIN_FOV = 40;
+        const MAX_FOV = 120;
+        const ZOOM_SPEED = 0.05;
+        let lastPinchDist = 0;
+
+        function getPinchDist(event) {
+            const dx = event.touches[0].clientX - event.touches[1].clientX;
+            const dy = event.touches[0].clientY - event.touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        renderer.domElement.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            
+            // חישוב כיוון הגלילה
+            const delta = event.deltaY > 0 ? 1 : -1;
+            
+            // עדכון ה-FOV
+            let newFov = camera.fov + delta * (camera.fov * ZOOM_SPEED);
+            camera.fov = THREE.MathUtils.clamp(newFov, MIN_FOV, MAX_FOV);
+            
+            // עדכון המצלמה
+            camera.updateProjectionMatrix();
+        }, { passive: false });
+
+        renderer.domElement.addEventListener('touchmove', (event) => {
+            if (event.touches.length === 2) {
+                event.preventDefault(); // מנע גלילה של הדף בזמן צביטה
+                
+                const currentPinchDist = getPinchDist(event);
+                const delta = currentPinchDist - lastPinchDist;
+                
+                // התאמת ה-FOV (הפוך מגלגלת: התרחקות = FOV גדל)
+                let newFov = camera.fov - delta * (ZOOM_SPEED * 1.5); // כפול 1.5 לרגישות
+                camera.fov = THREE.MathUtils.clamp(newFov, MIN_FOV, MAX_FOV);
+                
+                camera.updateProjectionMatrix();
+                lastPinchDist = currentPinchDist;
+            }
+        }, { passive: false }); // חובה false כדי לאפשר preventDefault
+
+        renderer.domElement.addEventListener('touchend', () => {
+            lastPinchDist = 0; // אפס בעת סיום הצביטה
+        });
+        // --- סוף לוגיקת זום ידנית ---
+
+
         // --- תאורה וסביבה ---
-        
         const rgbeLoader = new THREE.RGBELoader();
         rgbeLoader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/aerodynamics_workshop_1k.hdr', (texture) => {
             texture.mapping = THREE.EquirectangularReflectionMapping;
@@ -420,7 +620,6 @@
                 void main() {
                     vUv = uv;
                     vec3 newPosition = position;
-                    // אפקט גל קטן ואיטי על הקודקודים
                     newPosition.z += sin(newPosition.x * 0.5 + u_time * 0.1) * 0.5;
                     newPosition.y += cos(newPosition.y * 0.5 + u_time * 0.15) * 0.5;
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
@@ -434,11 +633,8 @@
 
                 void main() {
                     vec3 color = mix(u_color_deep, u_color_light, sin(vUv.x * 10.0 + u_time * 0.2) * 0.5 + 0.5);
-
-                    // הוספת פסי גלים עדינים
                     float wave = sin(vUv.y * 20.0 + u_time * 0.5) * 0.05 + 0.95;
                     color = mix(color, u_color_light, wave - 0.95);
-
                     gl_FragColor = vec4(color, 1.0);
                 }
             `,
@@ -451,8 +647,6 @@
         scene.add(backgroundMesh);
         
         // --- אלמנטים סטטיים (פודיום, זכוכית, מסגרת) ---
-        
-        // פודיום
         const podiumHeight = 15;
         const podiumGeometry = new THREE.BoxGeometry(34, podiumHeight, 34);
         const podiumMaterial = new THREE.MeshStandardMaterial({
@@ -467,7 +661,6 @@
         podium.castShadow = true;
         scene.add(podium);
 
-        // מים
         const waterGeometry = new THREE.BoxGeometry(30, 20, 30);
         const waterMaterial = new THREE.MeshPhysicalMaterial({
             color: 0x00aaff,
@@ -486,7 +679,6 @@
         water.receiveShadow = true;
         scene.add(water);
 
-        // זכוכית המיכל
         const glassGeometry = new THREE.BoxGeometry(32, 22, 32);
         const glassMaterial = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
@@ -504,7 +696,6 @@
         glass.castShadow = true;
         scene.add(glass);
 
-        // מסגרת אלומיניום
         const FRAME_SIZE = 0.5;
         const FRAME_COLOR = 0xe0e0e0; 
         const frameMaterial = new THREE.MeshPhysicalMaterial({
@@ -559,8 +750,6 @@
         createFrameBar(FRAME_SIZE, FRAME_SIZE, shortBar, -HALF_WIDTH, bottomY, 0);
         
         // --- חצץ וצמחייה ---
-
-        // שכבת חצץ
         const gravelCount = 50000; 
         const gravelGeometry = new THREE.BufferGeometry();
         const gravelPositions = new Float32Array(gravelCount * 3);
@@ -593,7 +782,6 @@
         const gravel = new THREE.Points(gravelGeometry, gravelMaterial);
         scene.add(gravel);
 
-        // מודל סלע
         const rockLoader = new THREE.GLTFLoader();
         const ROCK_URL = 'https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/rock_photogrammetry_scan.glb';
         const ROCK_SCALE = 4.0;
@@ -620,7 +808,6 @@
             scene.add(rock);
         });
 
-        // מודלי צמחייה
         const GLTF_LOADER = new THREE.GLTFLoader();
         const CORAL_URL = 'https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/fan_coral_cluster_low.glb';
         const SPONGE_URL = 'https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/tube_sponge.glb';
@@ -683,7 +870,6 @@
 
         // --- לוגיקת דגים ובועות דיבור ---
         
-        // מערך הבדיחות המקורי (שנשמר)
         const ORIGINAL_JOKES = [
             "מה המים קרים היום!", "שמעת על הדג שהלך לבית ספר?", "אני דג עם חלומות גדולים!", 
             "מי צריך אוויר כשיש מים?", "סנפיר ימין, סנפיר שמאל, תמשיך לשחות!", "אני ממש זורם עם הזרם!",
@@ -762,20 +948,18 @@
             const MIN_DURATION = 5000;  // 5 שניות מינימום
             
             if (text.length < 20) {
-                // אם הטקסט קצר מאוד (בדיחה קצרה), קצר למינימום
                 return MIN_DURATION;
             }
-            // אחרת, השאר 10 שניות מלאות
             return BASE_DURATION;
         }
 
-        // --- (הוספה מחדש) פונקציה לטעינת דגם הדג (GLB) עם פולבק ---
+        // --- פונקציה לטעינת דגם הדג (GLB) עם פולבק ---
         function createFish() {
             return new Promise((resolve) => {
                 const loader = new THREE.GLTFLoader();
                 loader.load('https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/clown_fish.glb', (gltf) => {
                     const fish = gltf.scene;
-                    fish.scale.set(0.05, 0.05, 0.05); // קנה מידה מוקטן
+                    fish.scale.set(0.05, 0.05, 0.05); 
                     fish.castShadow = true;
                     fish.traverse((child) => {
                         if (child.isMesh) {
@@ -798,7 +982,6 @@
                     resolve({ fish, mixer });
                 }, undefined, (error) => {
                     console.error('Error loading GLB model. Using fallback:', error);
-                    // פולבק: דג גיאומטרי פשוט (ספירה שטוחה)
                     const fishGroup = new THREE.Group();
                     const bodyGeometry = new THREE.SphereGeometry(1.5, 32, 32, 0, Math.PI * 2, 0, Math.PI);
                     bodyGeometry.scale(1.0, 0.7, 0.5);
@@ -818,13 +1001,13 @@
                     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
                     body.castShadow = true;
                     fishGroup.add(body);
-                    fishGroup.scale.set(0.05, 0.05, 0.05); // קנה מידה מוקטן לפולבק
+                    fishGroup.scale.set(0.05, 0.05, 0.05); 
                     resolve({ fish: fishGroup, mixer: null });
                 });
             });
         }
 
-        // --- (הוספה מחדש) יצירת והצבת הדגים ---
+        // --- יצירת והצבת הדגים ---
         async function initializeFishes() {
             for (let i = 0; i < 10; i++) {
                 const { fish, mixer } = await createFish();
@@ -836,13 +1019,11 @@
                 fish.rotation.y = Math.random() * Math.PI * 2;
                 scene.add(fish);
                 
-                // אלמנט HTML לבועת הדיבור
                 const bubble = document.createElement('div');
                 bubble.className = 'speech-bubble';
                 bubble.style.display = 'none';
                 document.body.appendChild(bubble);
 
-                // ** חדש: בועת איקון מגיש חדשות **
                 const anchorBubble = document.createElement('div');
                 anchorBubble.className = 'anchor-icon-bubble';
                 document.body.appendChild(anchorBubble);
@@ -855,19 +1036,18 @@
                         (Math.random() - 0.5) * 0.05
                     ),
                     bubble: bubble,
-                    anchorBubble: anchorBubble, // שמירת הפניה לבועת המגיש
+                    anchorBubble: anchorBubble, 
                     bubbleTimer: Math.random() * 5,
                     directionChangeTimer: Math.random() * 5 + 5,
                     responseTimer: -1,
                     mixer: mixer,
-                    // שמירת המגיש הספציפי שהוקצה לדג
                     assignedAnchor: ANCHOR_GROUPS[currentAnchorType][i % ANCHOR_GROUPS[currentAnchorType].length],
-                    isFrozenVisible: false // ** הוספת המשתנה שחסר **
+                    isFrozenVisible: false 
                 });
             }
         }
 
-        // --- (הוספה מחדש) בועות אוויר עולות ---
+        // --- בועות אוויר עולות ---
         const bubbleGeometry = new THREE.SphereGeometry(0.1, 16, 16);
         const bubbleMaterial = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
@@ -904,40 +1084,40 @@
             news: {
                 query: "כותרות חדשות אקטואליות מישראל ומהעולם, כולל מקור כמו ynet, חדשות 12 וכדומה",
                 system: "Act as a concise news aggregator. Generate a list of 10 current news headlines in Hebrew based on the latest available information. For each headline, include a concise source (e.g., 'ynet', 'חדשות 12') and a time reference (e.g., 'לפני 3 שעות'). Include a channel icon emoji at the start of each line, such as 📺, 📰, 📝. Output the headline, source, and time on a single line. Do not add any introductory text, concluding remarks, numbering, or bullet points. Example line: 📺 כותרת הדיווח (מקור, זמן פרסום).",
-                message: "כותרות חדשות (כולל מקור ושעה)",
+                message: "כותרות חדשות",
                 anchorGroup: 'general'
             },
-            i24news: { // קטגוריה חדשה I24NEWS
+            i24news: { 
                 query: "דיווחים בינלאומיים עדכניים בעלי זיקה לישראל",
                 system: "Act as a global news anchor for I24NEWS. Provide 8 concise, relevant international headlines focusing on diplomacy, security, and global events relevant to Israel. Start each line with the 🌐 emoji. Include a global source (e.g., 'רויטרס', 'CNN') and a time reference (e.g., 'לפני 2 דקות'). Output on a single line. Do not add any introductory text, concluding remarks, numbering, or bullet points.",
-                message: "עדכוני I24 NEWS בינלאומיים",
+                message: "עדכוני I24 NEWS",
                 anchorGroup: 'i24news'
             },
-            tech: { // קטגוריה חדשה: הי-טק / סייבר
+            tech: { 
                 query: "חדשות הי-טק וסייבר אקטואליות מישראל והעולם",
                 system: "Act as a cyber and tech news terminal. Generate 8 recent headlines in Hebrew on cybersecurity, startups, and advanced technology. The tone must be concise and sharp, using technical or 'cyber' jargon where appropriate. For each headline, include a key technological term or company name. Output on a single line. Do not add any introductory text, concluding remarks, numbering, or bullet points.",
                 message: "עדכוני סייבר והי-טק",
                 anchorGroup: 'tech'
             },
-            sport: { // קטגוריה חדשה: ספורט
+            sport: { 
                 query: "תוצאות ועדכונים אחרונים בכדורגל, כדורסל וספורט ישראלי ובינלאומי",
                 system: "Act as a sportscaster. Provide 8 exciting and recent updates on Israeli and international football and basketball results. Start each line with a relevant sports emoji (e.g., ⚽, 🏀, 🥇, 🏆). Include team names and scores/results. Output on a single line. Do not add any introductory text, concluding remarks, numbering, or bullet points.",
-                message: "עדכוני ספורט (כולל אייקונים)",
+                message: "עדכוני ספורט",
                 anchorGroup: 'sport'
             },
             stock: {
                 query: "שערי מדד תל אביב 125, הדולר, והיורו, ועדכון קצר על מצב המסחר",
                 system: "Act as a financial news ticker. Provide 7 distinct, concise updates in Hebrew regarding the Tel Aviv 125 stock index (TA-125), the exchange rates for the US Dollar (USD) and the Euro (EUR), and a brief summary of market sentiment. Include numerical changes and use specific Unicode arrow icons (▲ for gain, ▼ for loss) to visually represent movement/trend for each item, simulating a diagram. Example line: ת\"א 125: 1,800.56 (▲ 1.25%).",
-                message: "נתוני בורסה עדכניים (כולל חצים)",
+                message: "נתוני בורסה",
                 anchorGroup: 'finance'
             },
             weather: {
                 query: "תחזית מזג אוויר יומית עדכנית בישראל (ירושלים, תל אביב, חיפה, באר שבע) עם דגש על טמפרטורות",
                 system: "Act as a visual meteorologist. Provide a short, one-sentence weather summary for today in Israel, followed by current temperature or forecast high temperatures for Jerusalem, Tel Aviv, Haifa, and Be'er Sheva. Use Hebrew and include a highly relevant weather emoji icon (e.g., ☀️, 🌧️, ☁️) at the start of each line. Output each piece of information on a new line. Do not add any introductory text, concluding remarks, numbering, or bullet points.",
-                message: "מזג אוויר מעודכן (כולל אייקונים)",
+                message: "מזג אוויר",
                 anchorGroup: 'weather'
             },
-            jokes: { // הוספת בדיחות כקטגוריה לוגית
+            jokes: { 
                 query: "בדיחות דגים קצרות בעברית",
                 system: "Generate 10 short, funny fish jokes in Hebrew. Each joke should be on a new line. Do not add any introductory or concluding text, numbering, or bullet points.",
                 message: "בדיחות דגים קלאסיות",
@@ -946,7 +1126,6 @@
         };
 
         // ** פונקציה חדשה: הגדרת מפתח ה-API **
-        // ** שינוי: נוסף פרמטר hideModal **
         function setApiKey(hideModal) {
             const input = document.getElementById('apiKeyInput');
             const newKey = input.value.trim();
@@ -960,7 +1139,6 @@
                 enableDataButtons(false);
             }
 
-            // ** שינוי: הסתר מודאל אם נדרש **
             if (hideModal) {
                 document.getElementById('api-modal').style.display = 'none';
             }
@@ -991,13 +1169,18 @@
             document.querySelectorAll('.data-button').forEach(btn => btn.disabled = true);
             STATUS_MESSAGE.innerText = `טוען ${promptConfig.message} (זה עשוי לקחת כמה שניות)...`;
 
+            // ** (תיקון) הגדרת Payload בסיסי **
             const payload = {
                 contents: [{ parts: [{ text: promptConfig.query }] }],
-                tools: [{ "google_search": {} }],
                 systemInstruction: {
                     parts: [{ text: promptConfig.system }]
                 },
             };
+
+            // ** (תיקון) הוסף כלים רק אם זה *לא* בדיחות **
+            if (type !== 'jokes') {
+                payload.tools = [{ "google_search": {} }];
+            }
 
             let attempts = 0;
             const maxAttempts = 3;
@@ -1016,7 +1199,17 @@
                         body: JSON.stringify(payload)
                     });
 
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    // (תיקון) טיפול שונה בשגיאות
+                    if (!response.ok) {
+                         const errorBody = await response.json(); // נסה לקרוא את גוף השגיאה
+                         console.error("API Error Body:", errorBody);
+                         if (response.status === 400) {
+                             STATUS_MESSAGE.innerText = `שגיאת 400 (Bad Request). ודא שמפתח ה-API שלך חוקי וחשבון החיוב פעיל.`;
+                         } else {
+                             throw new Error(`HTTP error! status: ${response.status}`);
+                         }
+                         continue; // דלג להמשך הלולאה
+                    }
 
                     const result = await response.json();
                     const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -1030,6 +1223,7 @@
                 } catch (error) {
                     console.error("Error fetching data:", error);
                     if (attempts < maxAttempts) {
+                        STATUS_MESSAGE.innerText = `ניסיון טעינה ${attempts} נכשל... מנסה שוב.`;
                         const delay = Math.pow(2, attempts) * 1000;
                         await new Promise(resolve => setTimeout(resolve, delay));
                     }
@@ -1043,7 +1237,10 @@
                 STATUS_MESSAGE.innerText = `הדגים מציגים ${promptConfig.message} (${fishQuotes.length} פריטים)`;
             } else {
                 fishQuotes = [...ORIGINAL_JOKES];
-                STATUS_MESSAGE.innerText = `שגיאת עדכון: לא ניתן היה לטעון ${promptConfig.message}. חזרנו לבדיחות.`;
+                // אם השגיאה לא הייתה 400 אלא כשל כללי, הצג הודעה אחרת
+                if (!STATUS_MESSAGE.innerText.includes("400")) {
+                    STATUS_MESSAGE.innerText = `שגיאת עדכון: לא ניתן היה לטעון ${promptConfig.message}. חזרנו לבדיחות.`;
+                }
                 currentAnchorType = 'general'; // חזרה לקבוצת המגישים הכללית
             }
         }
@@ -1076,7 +1273,7 @@
                     }
                 });
                 STATUS_MESSAGE.innerText = "האקווריום והמידע מוקפאים. תנועת המצלמה עדיין פעילה.";
-                controls.enabled = false; 
+                // controls.enabled = false; // בוטל לבקשת המשתמש - לאפשר סיבוב מצלמה במצב הקפאה
             } else {
                 fishes.forEach(fish => {
                     fish.isFrozenVisible = false;
@@ -1085,7 +1282,7 @@
                 });
 
                 STATUS_MESSAGE.innerText = "האקווריום חזר לפעילות מלאה.";
-                controls.enabled = true; 
+                // controls.enabled = true; // בוטל לבקשת המשתמש - לאפשר סיבוב מצלמה במצב הקפאה
             }
         }
         
@@ -1095,30 +1292,46 @@
              document.getElementById('apiKeyInput').focus();
         }
 
-        // ** שינוי: הסרת toggleMenu() **
+        // ** פונקציה חדשה: הצגת מודאל מידע **
+        function showInfoModal() {
+             document.getElementById('info-modal').style.display = 'flex';
+        }
+        
+        function hideInfoModal() {
+             document.getElementById('info-modal').style.display = 'none';
+        }
 
-        // --- לוגיקת הסתרת UI ---
+        // --- (חדש) לוגיקת הסתרת UI והמבורגר ---
         let uiTimeout;
         const uiContainer = document.getElementById('ui-container');
-        
-        // ** פונקציה חדשה: הסתרת ה-UI האוטומטית **
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+
         function hideUI() {
-            uiContainer.classList.add('hidden');
+            // הסתר רק במצב מחשב
+            if (window.innerWidth > 600) {
+                uiContainer.classList.add('hidden');
+            }
         }
 
-        // ** פונקציה חדשה: הצגת ה-UI (במהלך תנועת עכבר) **
         function showUI() {
-            clearTimeout(uiTimeout);
-            uiContainer.classList.remove('hidden');
-            uiTimeout = setTimeout(hideUI, 5000); // הפעל טיימר הסתרה חדש
+            // הצג רק במצב מחשב
+            if (window.innerWidth > 600) {
+                clearTimeout(uiTimeout);
+                uiContainer.classList.remove('hidden');
+                uiTimeout = setTimeout(hideUI, 5000); // הפעל טיימר הסתרה חדש
+            }
         }
         
-        // הגדרה ראשונית של התפריט: מוסתר
-        setTimeout(hideUI, 50);
-
-        // מאזינים לתנועת עכבר ונגיעה
-        window.addEventListener('mousemove', showUI);
-        window.addEventListener('touchstart', showUI);
+        // פונקציה לפתיחת/סגירת תפריט המבורגר
+        function toggleMobileMenu() {
+            uiContainer.classList.toggle('mobile-active');
+            // אם פותחים, שנה את האייקון ל-X
+            if (uiContainer.classList.contains('mobile-active')) {
+                hamburgerMenu.innerHTML = '✕';
+            } else {
+                hamburgerMenu.innerHTML = '☰';
+            }
+        }
 
         // לולאת האנימציה הראשית
         const clock = new THREE.Clock();
@@ -1279,30 +1492,57 @@
             renderer.render(scene, camera);
         }
 
-        // טיפול בשינוי גודל החלון
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
+        // --- (חדש) פונקציה להתאמת FOV בשינוי גודל ---
+        function handleResize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            camera.aspect = width / height;
+
+            // עדכן FOV (שדה ראייה) בהתאם לרוחב המסך
+            if (width <= 600) {
+                // מובייל - עדשה רחבה
+                camera.fov = 100;
+            } else {
+                // מחשב - עדשה רגילה
+                camera.fov = 75;
+            }
+
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            backgroundMaterial.uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
-        });
+            renderer.setSize(width, height);
+            backgroundMaterial.uniforms.u_resolution.value.set(width, height);
+        }
+
+        // טיפול בשינוי גודל החלון
+        window.addEventListener('resize', handleResize);
         
+        // --- (חדש) הפעלת מאזינים ---
+        
+        // מאזינים לתנועת עכבר (רק למחשב)
+        window.addEventListener('mousemove', showUI);
+        
+        // מאזין לכפתור ההמבורגר (רק למובייל)
+        hamburgerMenu.addEventListener('click', toggleMobileMenu);
+
         // הפעלת לולאת האנימציה עם טעינת החלון
         window.onload = function () {
-            initializeFishes(); // ** קריאה לאתחול הדגים **
+            initializeFishes(); 
+            handleResize(); // ** קרא ל-handleResize בטעינה ראשונית **
             animate();
             
-            // ** שינוי: התפריט נשאר גלוי תמיד, אין צורך בהסתרה ראשונית **
-            // הגדרה ראשונית של התפריט: מוסתר
-            setTimeout(() => {
-                // ודא שהתפריט מתחיל מוסתר ושומר על מצב נקי
-                hideUI(); 
-            }, 50); 
+            // הגדרה ראשונית של התפריט
+            if (window.innerWidth > 600) {
+                // במחשב, הסתר לאחר 5 שניות
+                setTimeout(hideUI, 5000); 
+            } else {
+                // במובייל, ודא שהתפריט מוסתר (אך ההמבורגר גלוי)
+                uiContainer.classList.remove('hidden'); // הסר את מחלקת ההסתרה של המחשב
+                uiContainer.classList.remove('mobile-active'); // ודא שהוא סגור
+            }
+            
+            // בדוק אם יש מפתח API מאתחול (אם היה נשמר)
+            setApiKey(false);
         }
     </script>
 </body>
 </html>
-
-
-
-
