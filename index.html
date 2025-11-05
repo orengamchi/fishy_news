@@ -1193,7 +1193,7 @@
                     }
                 });
                 STATUS_MESSAGE.innerText = "האקווריום והמידע מוקפאים. תנועת המצלמה עדיין פעילה.";
-                controls.enabled = false; 
+                // controls.enabled = false; // בוטל לבקשת המשתמש - לאפשר סיבוב מצלמה במצב הקפאה
             } else {
                 fishes.forEach(fish => {
                     fish.isFrozenVisible = false;
@@ -1452,4 +1452,5 @@
     </script>
 </body>
 </html>
+
 
