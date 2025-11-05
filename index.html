@@ -281,6 +281,30 @@
 
         /* התאמת מודאל המידע (i) למובייל */
         @media (max-width: 600px) {
+            
+            /* (חדש) הגדרת תפריט עליון נגלל למובייל */
+            #ui-container {
+                top: 0;
+                left: 0;
+                width: 100%;
+                max-width: 100%; /* דריסה של 98vw */
+                border-radius: 0; /* פינות מרובעות על כל הרוחב */
+                padding: 5px;
+                overflow-x: auto; /* מאפשר גלילה אופקית */
+                overflow-y: hidden; /* מונע גלילה אנכית */
+                -webkit-overflow-scrolling: touch; /* גלילה חלקה באייפון */
+                white-space: nowrap; /* מונע שבירת שורות בכפתורים */
+            }
+            
+            #controls-group {
+                flex-wrap: nowrap; /* מוודא שהכפתורים נשארים בשורה אחת */
+            }
+
+            #statusMessage {
+                display: none; /* הסתרת הסטטוס כדי לפנות מקום לאיקונים */
+            }
+
+            /* (סגנונות קיימים של המודאל) */
             #info-modal-content {
                 padding: 15px; /* פחות ריפוד */
                 width: 90%; 
