@@ -62,177 +62,233 @@
             display: none; /* מוסתר בהתחלה */
         }
         
-        /* --- סגנון תפריט נשלף (Off-Canvas) --- */
+        /* --- סגנון תפריט עליון קבוע (Top Bar) --- */
         #ui-container {
-            position: fixed; /* שינוי מ-absolute ל-fixed */
-            top: 0;
-            right: 0;
-            height: 100%;
-            width: 320px; /* רוחב בסיסי */
-            max-width: 90vw; /* רוחב מקסימלי למובייל */
+            position: fixed; 
+            top: 10px; 
+            left: 10px; 
+            height: auto;
+            width: auto;
+            max-width: 98vw;
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
+            flex-direction: row; 
+            align-items: center;
             z-index: 20;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.95);
-            border-left: 2px solid #00ffff; /* סגנון סייבר */
-            transform: translateX(100%); /* ** מחוץ למסך ** */
-            transition: transform 0.3s ease-in-out;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-        #ui-container.visible {
-            transform: translateX(0); /* ** בתוך המסך ** */
-        }
-
-        /* לשונית חשיפת תפריט */
-        #toggle-tab {
-            position: fixed;
-            top: 50%;
-            right: 0;
-            transform: translateY(-50%) translateX(100%);
-            padding: 10px 15px;
-            background: #003366;
-            color: #00ffff;
-            border: 2px solid #00ffff;
-            border-right: none;
-            border-top-left-radius: 8px;
-            border-bottom-left-radius: 8px;
-            cursor: pointer;
-            z-index: 21; /* מעל התפריט כשהוא מוסתר */
-            transition: transform 0.3s ease-in-out;
-            font-weight: bold;
-            text-align: center;
-        }
-        #toggle-tab.active {
-            transform: translateY(-50%) translateX(320px); /* זז שמאלה כשמוצג */
-        }
-
-        /* אלמנטים פנימיים */
-        .data-button {
-            /* ... (ללא שינוי מהותי) */
-            background-color: #0077b6;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 8px;
-            width: 100%; 
-            box-sizing: border-box;
+            padding: 5px; /* ** צר יותר ** */
+            background: #000;
+            /* ** מראה הניאון מהתמונה ** */
             border: 2px solid #00ffff; 
-            background: #003366;
-            color: #00ffff;
+            box-shadow: 0 0 10px #00ffff55; 
+            border-radius: 12px;
+            transition: opacity 0.5s ease-in-out; /* ** שינוי: טרנזיציית הסתרה ** */
+            box-sizing: border-box;
+            overflow: hidden; 
         }
-        .data-button:disabled {
+        
+        /* ** הסתרה/חשיפה של כל התפריט ** */
+        #ui-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* ** מכולת הכפתורים המינימליסטיים ** */
+        #controls-group {
+            display: flex;
+            flex-wrap: nowrap; 
+            gap: 5px; /* ** צמוד יותר ** */
+            height: auto;
+            margin: 0; 
+            padding-right: 5px;
+        }
+        /* סגנון כפתורי איקונים (מרובעים, כמו בתמונה) */
+        .icon-button {
+            width: 45px; 
+            height: 45px;
+            padding: 0;
+            font-size: 20px; 
+            line-height: 45px;
+            text-align: center;
+            
+            border-radius: 8px; /* מרובע יותר */
+            cursor: pointer;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            
+            background: #003366;
+            color: white; /* טקסט לבן לאיקונים */
+            border: 2px solid #00ffff; /* מסגרת ניאון */
+            box-shadow: 0 0 5px #00ffff55;
+            flex-shrink: 0; /* לא יתכווץ במובייל */
+        }
+        .icon-button:hover:not(:disabled) {
+            background-color: #0055aa;
+            transform: scale(1.05);
+        }
+        .icon-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
-        .data-button:hover:not(:disabled) {
-            background-color: #0055aa;
+        
+        /* כפתורי מצב (בדיחות/הקפאה) */
+        #jokesButton, #pauseButton, #apiButton {
+            width: 45px;
+            height: 45px;
+            padding: 0;
+            margin: 0 5px; /* צמוד יותר */
+            font-size: 20px;
+            border-radius: 8px;
+            box-sizing: border-box;
+            line-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
+
+        /* כפתור בדיחות מותאם (ירוק) */
         #jokesButton {
-            background-color: #4CAF50; /* ירוק */
-            margin-top: 16px; /* מרווח הפרדה */
-            border: 2px solid #66BB6A;
             background: #225522;
             color: #66BB6A;
+            border: 2px solid #66BB6A;
+            box-shadow: 0 0 5px #66BB6A55;
         }
-        #jokesButton:hover:not(:disabled) {
-            background-color: #337733;
+        
+        /* כפתור הקפאה מותאם (אדום) */
+        #pauseButton {
+            background: #791e1e;
+            color: #FFCDD2;
+            border: 2px solid #FF5722;
+            box-shadow: 0 0 5px #FF572255;
         }
+        
+        /* כפתור API (כתום-צהוב) */
+        #apiButton {
+            background: #6d4d00;
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 5px #FFD70055;
+        }
+
+        /* תיבת סטטוס (בצד ימין בתפריט) */
         #statusMessage {
-            margin-top: 8px;
+            margin-right: 15px; 
             font-size: 14px;
             color: #00ffff;
             font-weight: 500;
             direction: rtl;
             text-align: right;
-            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; 
+            max-width: 300px;
         }
-        .api-input-group {
-            /* ... (ללא שינוי מהותי) */
+
+        /* --- מודאל API KEY חדש (מוסתר) --- */
+        #api-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        #api-modal-content {
+            background: #111;
+            padding: 25px;
+            border-radius: 12px;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 20px #FFD70055;
+            width: 90%;
+            max-width: 400px;
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px dashed #00ffff55;
-            width: 100%;
+            align-items: center;
+            direction: rtl;
         }
-        .api-input-group input {
-            /* ... (ללא שינוי מהותי) */
+        #api-modal-content input {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            background: #111;
-            border: 1px solid #00ffff;
+            padding: 10px;
+            margin: 10px 0 15px;
+            background: #000;
+            border: 1px solid #FFD700;
             color: #00ffff;
             border-radius: 4px;
             box-sizing: border-box;
             text-align: right;
             direction: ltr;
         }
-        .api-input-group button {
-            /* ... (ללא שינוי מהותי) */
-            margin-top: 5px;
-            padding: 5px 10px;
-            background: #00ffff;
-            color: #003366;
+        #api-modal-content button {
+            padding: 10px 20px;
+            background: #FFD700;
+            color: #000;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.2s;
         }
-        #pauseButton {
-            background-color: #D32F2F; /* אדום/כתום */
-            margin-top: 16px;
-            border: 2px solid #FF5722;
-            background: #791e1e;
-            color: #FFCDD2;
+        #api-modal-content button:hover {
+            background: #e0b000;
         }
-        #pauseButton:hover:not(:disabled) {
-            background-color: #5d1616;
-        }
+
+
         /* התאמה למובייל */
         @media (max-width: 600px) {
             #ui-container {
-                width: 90vw;
+                left: 0;
+                right: 0;
+                width: 100%;
+                border-radius: 0;
             }
-            #toggle-tab.active {
-                transform: translateY(-50%) translateX(90vw); /* זז שמאלה בהתאם לרוחב המובייל */
+            #controls-group {
+                /* במובייל מאפשר שבירת שורה כדי שהכפתורים לא יידחסו */
+                flex-wrap: wrap; 
+                justify-content: flex-start;
+                gap: 5px;
             }
         }
     </style>
 </head>
 <body>
-    <div id="ui-container">
-        <!-- קבוצת קלט API KEY --><div class="api-input-group">
-            <label style="color: #00ffff; font-size: 14px; margin-bottom: 5px;">מפתח API (Gemini/Google)</label>
-            <input type="password" id="apiKeyInput" placeholder="הכנס מפתח API" dir="ltr">
-            <button onclick="setApiKey()">שמור מפתח</button>
+    
+    <!-- מודאל להזנת API Key -->
+    <div id="api-modal">
+        <div id="api-modal-content">
+            <h3 style="color: #FFD700; margin-top: 0;">הזנת מפתח API</h3>
+            <p style="color: #ccc; font-size: 14px; text-align: center;">יש להכניס מפתח Gemini/Google API כדי לאפשר עדכוני נתונים בזמן אמת (חדשות, בורסה, מזג אוויר).</p>
+            <input type="password" id="apiKeyInput" placeholder="הדבק מפתח API כאן" dir="ltr">
+            <button onclick="setApiKey(true)">שמור ועדכן</button>
         </div>
+    </div>
 
-        <!-- כפתורי תוכן דינמי --><button id="newsButton" class="data-button" onclick="updateQuotes('news')">חדשות כלליות (ישראל/עולם)</button>
-        <button id="i24newsButton" class="data-button" onclick="updateQuotes('i24news')">I24 NEWS (עדכונים בינ"ל)</button>
-        <button id="techButton" class="data-button" onclick="updateQuotes('tech')">חדשות הי-טק / סייבר</button>
-        <button id="sportButton" class="data-button" onclick="updateQuotes('sport')">חדשות ספורט (איקונים)</button>
-        <button id="stockButton" class="data-button" onclick="updateQuotes('stock')">נתוני בורסה (חצים)</button>
-        <button id="weatherButton" class="data-button" onclick="updateQuotes('weather')">מזג אוויר (איקונים)</button>
+    <div id="ui-container">
+        <!-- כפתורי איקונים דינמיים (בשורה) -->
+        <div id="controls-group">
+            <button class="icon-button data-button" id="newsButton" onclick="updateQuotes('news')" title="חדשות כלליות">📰</button>
+            <button class="icon-button data-button" id="i24newsButton" onclick="updateQuotes('i24news')" title="I24 NEWS">🌐</button>
+            <button class="icon-button data-button" id="techButton" onclick="updateQuotes('tech')" title="הי-טק / סייבר">💻</button>
+            <button class="icon-button data-button" id="sportButton" onclick="updateQuotes('sport')" title="ספורט">⚽</button>
+            <button class="icon-button data-button" id="stockButton" onclick="updateQuotes('stock')" title="בורסה">💰</button>
+            <button class="icon-button data-button" id="weatherButton" onclick="updateQuotes('weather')" title="מזג אוויר">☀️</button>
+        </div>
         
-        <!-- כפתור הקפאה חדש --><button id="pauseButton" onclick="togglePause()">הקפאה / המשך</button>
-        <!-- כפתור חזרה לבדיחות --><button id="jokesButton" class="data-button" onclick="returnToJokes()">חזרה לבדיחות דגים</button>
+        <!-- כפתור הקפאה -->
+        <button id="pauseButton" onclick="togglePause()" title="הקפאה/המשך">⏸️</button>
+        <!-- כפתור חזרה לבדיחות -->
+        <button id="jokesButton" class="icon-button data-button" onclick="returnToJokes()" title="חזרה לבדיחות">🐠</button>
+        <!-- כפתור API (כתום, להצגת המודאל) -->
+        <button id="apiButton" onclick="showApiModal()" title="הזן מפתח API">🔑</button>
 
         <div id="statusMessage"></div>
     </div>
-    <!-- לשונית לחשיפת התפריט --><div id="toggle-tab" onclick="toggleMenu()">
-        תפריט
-    </div>
-    <!-- טעינת ספריות Three.js מהרשת --><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    
+    <!-- טעינת ספריות Three.js מהרשת -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/RGBELoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -243,9 +299,11 @@
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`;
         
         const STATUS_MESSAGE = document.getElementById('statusMessage');
-        let isPaused = false; // ** משתנה חדש: מצב הקפאה **
-        let isMenuVisible = false; // ** חדש: מצב תפריט **
+        let isPaused = false; 
         
+        // ** הגדרה גלובלית מוקדמת של fishes **
+        const fishes = []; 
+
         // רשימת מגישי חדשות ישראלים (לשימוש באיקון בועה)
         const ANCHOR_GROUPS = {
             general: [
@@ -255,7 +313,7 @@
                 { name: "אודי סגל", icon: "🎙️" },
                 { name: "בן כספית", icon: "📝" }
             ],
-            i24news: [ // קבוצה חדשה I24NEWS
+            i24news: [ 
                 { name: "קרולין גליק", icon: "🌐" },
                 { name: "עמית סגל", icon: "🇮🇱" },
                 { name: "אדמון לוי", icon: "🌎" }
@@ -281,7 +339,7 @@
                 { name: "נחמן סירקין", icon: "⛈️" }
             ]
         };
-        let currentAnchorType = 'general'; // קבוצת המגישים הנוכחית
+        let currentAnchorType = 'general'; 
 
         // הגדרות סצנה
         const scene = new THREE.Scene();
@@ -298,25 +356,21 @@
 
         // --- בקרות ומצלמה ---
         
-        // ** חדש: מיקום ראשוני מעל הסלע (5, -8, 5) **
-        camera.position.set(1, -3, 10); // ** קרוב יותר למרכז, אך עדיין מעל הסלע **
-        camera.lookAt(5, -5, 5); // עדיין מסתכל על הסלע
+        camera.position.set(1, -3, 10); 
+        camera.lookAt(5, -5, 5); 
 
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.target.set(5, -5, 5); // ** חדש: מרכז המטרה הוא הסלע **
+        controls.target.set(5, -5, 5); 
         controls.minDistance = 5;
         controls.maxDistance = 100;
         
-        // ** מגבלות מצלמה למניעת יציאה משטח האקווריום **
-        // מונע מעבר מתחת לרצפה (y=-10) ומעל התקרה (y=10)
         controls.minPolarAngle = Math.PI * 0.52; 
         controls.maxPolarAngle = Math.PI * 0.9; 
         controls.minAzimuthAngle = -Math.PI * 0.9; 
         controls.maxAzimuthAngle = Math.PI * 0.9; 
         
-        // ** דרישה: אל תאפשר זום (התרחקות/התקרבות) **
         controls.enableZoom = false; 
 
         // --- תאורה וסביבה ---
@@ -715,6 +769,136 @@
             return BASE_DURATION;
         }
 
+        // --- (הוספה מחדש) פונקציה לטעינת דגם הדג (GLB) עם פולבק ---
+        function createFish() {
+            return new Promise((resolve) => {
+                const loader = new THREE.GLTFLoader();
+                loader.load('https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/clown_fish.glb', (gltf) => {
+                    const fish = gltf.scene;
+                    fish.scale.set(0.05, 0.05, 0.05); // קנה מידה מוקטן
+                    fish.castShadow = true;
+                    fish.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                            if (child.material) {
+                                child.material.envMapIntensity = 4.0;
+                            }
+                        }
+                    });
+
+                    let mixer = null;
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        mixer = new THREE.AnimationMixer(fish);
+                        gltf.animations.forEach((clip) => {
+                            mixer.clipAction(clip).play();
+                        });
+                    }
+
+                    resolve({ fish, mixer });
+                }, undefined, (error) => {
+                    console.error('Error loading GLB model. Using fallback:', error);
+                    // פולבק: דג גיאומטרי פשוט (ספירה שטוחה)
+                    const fishGroup = new THREE.Group();
+                    const bodyGeometry = new THREE.SphereGeometry(1.5, 32, 32, 0, Math.PI * 2, 0, Math.PI);
+                    bodyGeometry.scale(1.0, 0.7, 0.5);
+                    
+                    const fishTexture = new THREE.TextureLoader().load('https://i.imgur.com/Z7y9k5r.jpg');
+                    const bodyMaterial = new THREE.MeshPhysicalMaterial({
+                        map: fishTexture,
+                        roughness: 0.7,
+                        metalness: 0.3,
+                        transparent: true,
+                        opacity: 0.9,
+                        transmission: 0.2,
+                        ior: 1.5,
+                        side: THREE.DoubleSide,
+                        envMapIntensity: 4.0
+                    });
+                    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                    body.castShadow = true;
+                    fishGroup.add(body);
+                    fishGroup.scale.set(0.05, 0.05, 0.05); // קנה מידה מוקטן לפולבק
+                    resolve({ fish: fishGroup, mixer: null });
+                });
+            });
+        }
+
+        // --- (הוספה מחדש) יצירת והצבת הדגים ---
+        async function initializeFishes() {
+            for (let i = 0; i < 10; i++) {
+                const { fish, mixer } = await createFish();
+                fish.position.set(
+                    Math.random() * 20 - 10,
+                    Math.random() * 18 - 8,
+                    Math.random() * 20 - 10
+                );
+                fish.rotation.y = Math.random() * Math.PI * 2;
+                scene.add(fish);
+                
+                // אלמנט HTML לבועת הדיבור
+                const bubble = document.createElement('div');
+                bubble.className = 'speech-bubble';
+                bubble.style.display = 'none';
+                document.body.appendChild(bubble);
+
+                // ** חדש: בועת איקון מגיש חדשות **
+                const anchorBubble = document.createElement('div');
+                anchorBubble.className = 'anchor-icon-bubble';
+                document.body.appendChild(anchorBubble);
+                
+                fishes.push({
+                    mesh: fish,
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.05,
+                        (Math.random() - 0.5) * 0.01,
+                        (Math.random() - 0.5) * 0.05
+                    ),
+                    bubble: bubble,
+                    anchorBubble: anchorBubble, // שמירת הפניה לבועת המגיש
+                    bubbleTimer: Math.random() * 5,
+                    directionChangeTimer: Math.random() * 5 + 5,
+                    responseTimer: -1,
+                    mixer: mixer,
+                    // שמירת המגיש הספציפי שהוקצה לדג
+                    assignedAnchor: ANCHOR_GROUPS[currentAnchorType][i % ANCHOR_GROUPS[currentAnchorType].length],
+                    isFrozenVisible: false // ** הוספת המשתנה שחסר **
+                });
+            }
+        }
+
+        // --- (הוספה מחדש) בועות אוויר עולות ---
+        const bubbleGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+        const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.7,
+            roughness: 0.1,
+            metalness: 0.0,
+            transmission: 1.0,
+            ior: 1.01,
+            emissive: 0xffffff,
+            emissiveIntensity: 0.2
+        });
+        const bubbles = [];
+        for (let i = 0; i < 50; i++) {
+            const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
+            bubble.position.set(
+                Math.random() * 20 - 10,
+                -10,
+                Math.random() * 20 - 10
+            );
+            scene.add(bubble);
+            bubbles.push({
+                mesh: bubble,
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.005,
+                    Math.random() * 0.05 + 0.02,
+                    (Math.random() - 0.5) * 0.005
+                )
+            });
+        }
+
         // --- הגדרות API מורחבות ---
         const API_PROMPTS = {
             news: {
@@ -762,7 +946,8 @@
         };
 
         // ** פונקציה חדשה: הגדרת מפתח ה-API **
-        function setApiKey() {
+        // ** שינוי: נוסף פרמטר hideModal **
+        function setApiKey(hideModal) {
             const input = document.getElementById('apiKeyInput');
             const newKey = input.value.trim();
             if (newKey) {
@@ -773,6 +958,11 @@
                 API_KEY = "";
                 STATUS_MESSAGE.innerText = "אנא הכנס מפתח API חוקי כדי לאפשר קריאות נתונים.";
                 enableDataButtons(false);
+            }
+
+            // ** שינוי: הסתר מודאל אם נדרש **
+            if (hideModal) {
+                document.getElementById('api-modal').style.display = 'none';
             }
         }
         
@@ -789,13 +979,13 @@
         async function fetchQuotes(type) {
             if (!API_KEY && type !== 'jokes') {
                 STATUS_MESSAGE.innerText = "שגיאה: יש להכניס מפתח API לפני קריאת נתונים בזמן אמת.";
+                showApiModal(); // ** שינוי: פתח את המודאל אם חסר מפתח **
                 return;
             }
             
             const promptConfig = API_PROMPTS[type];
-            currentAnchorType = promptConfig.anchorGroup; // עדכן את קבוצת המגישים
+            currentAnchorType = promptConfig.anchorGroup; 
             
-            // ... (קוד טעינת ה-API כפי שהיה)
             
             // השבתת כל הכפתורים למניעת קריאות כפולות
             document.querySelectorAll('.data-button').forEach(btn => btn.disabled = true);
@@ -874,229 +1064,71 @@
         function togglePause() {
             isPaused = !isPaused;
             const button = document.getElementById('pauseButton');
-            button.innerText = isPaused ? "המשך (מוקפא)" : "הקפאה / המשך";
+            button.innerHTML = isPaused ? "▶️" : "⏸️"; // שינוי איקון
+            button.title = isPaused ? "המשך" : "הקפאה";
 
-            // הסתר את כל בועות ה-HTML במצב מוקפא
             if (isPaused) {
-                // ** שינוי: הבועות נשארות גלויות (block) במצב מוקפא **
                 fishes.forEach(fish => {
                     if (fish.bubble.style.display === 'block') {
-                        // אם הייתה גלויה, השאר אותה גלויה
                         fish.isFrozenVisible = true;
                     } else {
                         fish.isFrozenVisible = false;
                     }
                 });
                 STATUS_MESSAGE.innerText = "האקווריום והמידע מוקפאים. תנועת המצלמה עדיין פעילה.";
-                controls.enabled = false; // הקפאת תנועת מצלמה
+                controls.enabled = false; 
             } else {
-                // חזרה לפעילות
                 fishes.forEach(fish => {
                     fish.isFrozenVisible = false;
-                    // כל הבועות שהיו מוקפאות נעלמות עם ההמשך
                     fish.bubble.style.display = 'none';
                     fish.anchorBubble.style.display = 'none';
                 });
 
                 STATUS_MESSAGE.innerText = "האקווריום חזר לפעילות מלאה.";
-                controls.enabled = true; // המשך תנועת מצלמה
+                controls.enabled = true; 
             }
         }
         
-        // ** פונקציה חדשה: פתיחה/סגירת תפריט **
-        function toggleMenu() {
-            isMenuVisible = !isMenuVisible;
-            const uiContainer = document.getElementById('ui-container');
-            const toggleTab = document.getElementById('toggle-tab');
-            
-            if (isMenuVisible) {
-                uiContainer.classList.add('visible');
-                toggleTab.classList.add('active');
-            } else {
-                uiContainer.classList.remove('visible');
-                toggleTab.classList.remove('active');
-            }
+        // ** פונקציה חדשה: הצגת מודאל API **
+        function showApiModal() {
+             document.getElementById('api-modal').style.display = 'flex';
+             document.getElementById('apiKeyInput').focus();
         }
 
-        // --- לוגיקת דגים ובועות דיבור ---
-        
-        // Clock for animation delta
-        const clock = new THREE.Clock();
+        // ** שינוי: הסרת toggleMenu() **
 
-        // פונקציה לטעינת דגם הדג (GLB) עם פולבק
-        function createFish() {
-            return new Promise((resolve) => {
-                const loader = new THREE.GLTFLoader();
-                loader.load('https://raw.githubusercontent.com/orengamchi/3d_models_collection/main/clown_fish.glb', (gltf) => {
-                    const fish = gltf.scene;
-                    fish.scale.set(0.05, 0.05, 0.05); // קנה מידה מוקטן
-                    fish.castShadow = true;
-                    fish.traverse((child) => {
-                        if (child.isMesh) {
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                            if (child.material) {
-                                child.material.envMapIntensity = 4.0;
-                            }
-                        }
-                    });
-
-                    let mixer = null;
-                    if (gltf.animations && gltf.animations.length > 0) {
-                        mixer = new THREE.AnimationMixer(fish);
-                        gltf.animations.forEach((clip) => {
-                            mixer.clipAction(clip).play();
-                        });
-                    }
-
-                    resolve({ fish, mixer });
-                }, undefined, (error) => {
-                    console.error('Error loading GLB model. Using fallback:', error);
-                    // פולבק: דג גיאומטרי פשוט (ספירה שטוחה)
-                    const fishGroup = new THREE.Group();
-                    const bodyGeometry = new THREE.SphereGeometry(1.5, 32, 32, 0, Math.PI * 2, 0, Math.PI);
-                    bodyGeometry.scale(1.0, 0.7, 0.5);
-                    
-                    const fishTexture = new THREE.TextureLoader().load('https://i.imgur.com/Z7y9k5r.jpg');
-                    const bodyMaterial = new THREE.MeshPhysicalMaterial({
-                        map: fishTexture,
-                        roughness: 0.7,
-                        metalness: 0.3,
-                        transparent: true,
-                        opacity: 0.9,
-                        transmission: 0.2,
-                        ior: 1.5,
-                        side: THREE.DoubleSide,
-                        envMapIntensity: 4.0
-                    });
-                    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-                    body.castShadow = true;
-                    fishGroup.add(body);
-                    fishGroup.scale.set(0.05, 0.05, 0.05); // קנה מידה מוקטן לפולבק
-                    resolve({ fish: fishGroup, mixer: null });
-                });
-            });
-        }
-
-        // יצירת והצבת הדגים
-        const fishes = [];
-        async function initializeFishes() {
-            // השבת כפתורים עד שמפתח API מוכנס
-            enableDataButtons(false); 
-            
-            for (let i = 0; i < 10; i++) {
-                const { fish, mixer } = await createFish();
-                fish.position.set(
-                    Math.random() * 20 - 10,
-                    Math.random() * 18 - 8,
-                    Math.random() * 20 - 10
-                );
-                fish.rotation.y = Math.random() * Math.PI * 2;
-                scene.add(fish);
-                
-                // אלמנט HTML לבועת הדיבור
-                const bubble = document.createElement('div');
-                bubble.className = 'speech-bubble';
-                bubble.style.display = 'none';
-                document.body.appendChild(bubble);
-
-                // ** חדש: בועת איקון מגיש חדשות **
-                const anchorBubble = document.createElement('div');
-                anchorBubble.className = 'anchor-icon-bubble';
-                document.body.appendChild(anchorBubble);
-                
-                fishes.push({
-                    mesh: fish,
-                    velocity: new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.05,
-                        (Math.random() - 0.5) * 0.01,
-                        (Math.random() - 0.5) * 0.05
-                    ),
-                    bubble: bubble,
-                    anchorBubble: anchorBubble, // שמירת הפניה לבועת המגיש
-                    bubbleTimer: Math.random() * 5,
-                    directionChangeTimer: Math.random() * 5 + 5,
-                    responseTimer: -1,
-                    mixer: mixer,
-                    isFrozenVisible: false, // ** חדש: האם הבועה גלויה כשהממשק מוקפא? **
-                    // שמירת המגיש הספציפי שהוקצה לדג
-                    assignedAnchor: ANCHOR_GROUPS[currentAnchorType][i % ANCHOR_GROUPS[currentAnchorType].length]
-                });
-            }
-        }
-
-        initializeFishes();
-
-        // בועות אוויר עולות
-        const bubbleGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-        const bubbleMaterial = new THREE.MeshPhysicalMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.7,
-            roughness: 0.1,
-            metalness: 0.0,
-            transmission: 1.0,
-            ior: 1.01,
-            emissive: 0xffffff,
-            emissiveIntensity: 0.2
-        });
-        const bubbles = [];
-        for (let i = 0; i < 50; i++) {
-            const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
-            bubble.position.set(
-                Math.random() * 20 - 10,
-                -10,
-                Math.random() * 20 - 10
-            );
-            scene.add(bubble);
-            bubbles.push({
-                mesh: bubble,
-                velocity: new THREE.Vector3(
-                    (Math.random() - 0.5) * 0.005,
-                    Math.random() * 0.05 + 0.02,
-                    (Math.random() - 0.5) * 0.005
-                )
-            });
-        }
-
-        // --- לוגיקת הסתרת UI (הוסר ומוחלף ב-toggleMenu) ---
+        // --- לוגיקת הסתרת UI ---
         let uiTimeout;
         const uiContainer = document.getElementById('ui-container');
-        const toggleTab = document.getElementById('toggle-tab');
         
-        // לוגיקת הסתרת UI אוטומטית (עובדת רק על הסתרת הלשונית)
+        // ** פונקציה חדשה: הסתרת ה-UI האוטומטית **
         function hideUI() {
-            if (!isMenuVisible) {
-                uiContainer.classList.remove('visible');
-                toggleTab.style.transform = 'translateY(-50%) translateX(0)';
-            }
+            uiContainer.classList.add('hidden');
         }
 
+        // ** פונקציה חדשה: הצגת ה-UI (במהלך תנועת עכבר) **
         function showUI() {
             clearTimeout(uiTimeout);
-            
-            // הצגת הלשונית (במקום הקונטיינר)
-            toggleTab.style.transform = 'translateY(-50%) translateX(0)';
-
-            uiTimeout = setTimeout(() => {
-                // הסתרת הלשונית, אם התפריט לא גלוי
-                if (!isMenuVisible) {
-                    const width = uiContainer.offsetWidth; // קבל רוחב דינמי
-                    toggleTab.style.transform = `translateY(-50%) translateX(calc(100% - ${width}px - 10px))`;
-                }
-            }, 5000); // 5 שניות
+            uiContainer.classList.remove('hidden');
+            uiTimeout = setTimeout(hideUI, 5000); // הפעל טיימר הסתרה חדש
         }
         
-        // הגדרת מצב התפריט ההתחלתי (מוסתר)
-        toggleMenu(); // הפעלה ראשונית לסגירה
-        toggleTab.style.transform = 'translateY(-50%) translateX(0)'; // וודא שהלשונית גלויה
-        
+        // הגדרה ראשונית של התפריט: מוסתר
+        setTimeout(hideUI, 50);
+
         // מאזינים לתנועת עכבר ונגיעה
         window.addEventListener('mousemove', showUI);
         window.addEventListener('touchstart', showUI);
 
         // לולאת האנימציה הראשית
+        const clock = new THREE.Clock();
+
         function animate() {
+            if (fishes.length === 0) {
+                 requestAnimationFrame(animate);
+                 return; 
+            }
+            
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
             const elapsedTime = clock.getElapsedTime(); 
@@ -1253,28 +1285,24 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             backgroundMaterial.uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
-            
-            // עדכון מיקום הלשונית במובייל/שינוי גודל
-            if (isMenuVisible) {
-                 // דוחף את הלשונית החוצה כאשר התפריט פתוח
-                 const uiWidth = uiContainer.offsetWidth;
-                 toggleTab.style.transform = `translateY(-50%) translateX(${uiWidth}px)`;
-            } else {
-                 // מחזיר את הלשונית למצב סגור
-                 toggleTab.style.transform = `translateY(-50%) translateX(0)`;
-            }
-
         });
         
         // הפעלת לולאת האנימציה עם טעינת החלון
         window.onload = function () {
+            initializeFishes(); // ** קריאה לאתחול הדגים **
             animate();
             
-            // ודא שהלשונית ממוקמת נכון לאחר טעינה ראשונית
+            // ** שינוי: התפריט נשאר גלוי תמיד, אין צורך בהסתרה ראשונית **
+            // הגדרה ראשונית של התפריט: מוסתר
             setTimeout(() => {
-                toggleMenu(); // סוגר את התפריט
+                // ודא שהתפריט מתחיל מוסתר ושומר על מצב נקי
+                hideUI(); 
             }, 50); 
         }
     </script>
 </body>
 </html>
+
+
+
+
